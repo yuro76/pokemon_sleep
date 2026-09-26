@@ -1055,5 +1055,73 @@
       "ingredient_total_per_day": 28.12,
       "skill_per_day": 2.35
     }
+  },
+  {
+    "id": 33,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:39",
+    "name": "カメックス",
+    "name_en": "Blastoise",
+    "level": 37,
+    "nature": "てれや",
+    "subskills": [
+      "おてつだいスピードM",
+      "食材確率アップS",
+      "スキル確率アップS",
+      "食材確率アップM",
+      "スキルレベルアップS"
+    ],
+    "ingredients": [
+      "モーモーミルク",
+      "リラックスカカオ",
+      "リラックスカカオ"
+    ],
+    "skill_level": 2,
+    "rp": 1777,
+    "ribbon": 2,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 5404.2,
+      "ingredient_total_per_day": 59.04,
+      "skill_per_day": 1.14
+    }
+  },
+  {
+    "id": 34,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:39",
+    "name": "ウツボット",
+    "name_en": "Victreebel",
+    "level": 35,
+    "nature": "やんちゃ",
+    "subskills": [
+      "リサーチEXPボーナス",
+      "スキル確率アップM",
+      "最大所持数アップL",
+      "食材確率アップS",
+      "スキルレベルアップS"
+    ],
+    "ingredients": [
+      "あんみんトマト",
+      "あんみんトマト",
+      "あんみんトマト"
+    ],
+    "skill_level": 3,
+    "rp": 1922,
+    "ribbon": 1,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 5871.3,
+      "ingredient_total_per_day": 60.13,
+      "skill_per_day": 1.59
+    }
   }
 ]
