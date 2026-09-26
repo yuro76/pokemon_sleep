@@ -9,6 +9,9 @@
   update  <ID> <入力JSON>   記録の一部を上書き (レベルアップ・進化など)
   delete  <ID>              記録を削除
   require [名前 サブスキル...] 必須サブスキルの設定 (--clear で解除。引数なしで一覧)
+  sync                      記録を全ブランチのうち最新のものにそろえる
+
+lookup 以外のサブコマンドは、実行前に sync と同じ処理で記録を最新にする (records_sync.py。PS_NO_SYNC=1 で無効)。
 
 入力JSON (ファイルパス or '-' で標準入力):
 {
@@ -33,6 +36,8 @@ import math
 import sys
 from datetime import datetime
 from pathlib import Path
+
+import records_sync
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
 DATA = json.loads((SKILL_DIR / "data" / "pokemon.json").read_text(encoding="utf-8"))
@@ -952,6 +957,11 @@ def cmd_require(args):
     REQUIRED.write_text(json.dumps(raw, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def cmd_sync(args):
+    for rel, src in records_sync.sync().items():
+        print(f"{rel}: {src}")
+
+
 def main():
     ap = argparse.ArgumentParser(description="ポケモンスリープ 個体評価・記録ツール")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -968,7 +978,11 @@ def main():
     s.add_argument("--clear", action="store_true")
     s.add_argument("--none", action="store_true", help="必須なしを確認済みとして記録")
     s.set_defaults(f=cmd_require)
+    s = sub.add_parser("sync"); s.set_defaults(f=cmd_sync)
     args = ap.parse_args()
+    if args.cmd != "lookup":
+        # 記録はセッション(ブランチ)ごとに更新されるので、読み書きの前に最新の記録を取り込む
+        records_sync.sync()
     args.f(args)
 
 
