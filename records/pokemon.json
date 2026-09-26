@@ -783,5 +783,73 @@
       "ingredient_total_per_day": 18.11,
       "skill_per_day": 2.07
     }
+  },
+  {
+    "id": 25,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:32",
+    "name": "バンギラス",
+    "name_en": "Tyranitar",
+    "level": 41,
+    "nature": "きまぐれ",
+    "subskills": [
+      "おてつだいスピードM",
+      "食材確率アップM",
+      "最大所持数アップS",
+      "スキル確率アップS",
+      "睡眠EXPボーナス"
+    ],
+    "ingredients": [
+      "あったかジンジャー",
+      "ワカクサ大豆",
+      "ワカクサ大豆"
+    ],
+    "skill_level": 3,
+    "rp": 2357,
+    "ribbon": 2,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 6157.01,
+      "ingredient_total_per_day": 79.6,
+      "skill_per_day": 2.74
+    }
+  },
+  {
+    "id": 26,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:32",
+    "name": "ゲンガー",
+    "name_en": "Gengar",
+    "level": 51,
+    "nature": "ゆうかん",
+    "subskills": [
+      "睡眠EXPボーナス",
+      "食材確率アップM",
+      "きのみの数S",
+      "リサーチEXPボーナス",
+      "スキル確率アップS"
+    ],
+    "ingredients": [
+      "げきからハーブ",
+      "あじわいキノコ",
+      "あじわいキノコ"
+    ],
+    "skill_level": 3,
+    "rp": 4008,
+    "ribbon": 2,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 15132.38,
+      "ingredient_total_per_day": 41.08,
+      "skill_per_day": 1.48
+    }
   }
 ]
