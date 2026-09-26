@@ -715,50 +715,55 @@ def save_records(records):
 
 def compare(ind, records, exclude_id=None):
     p = POKEMON_BY_EN[ind["name_en"]]
-    ing_set = {i for i in ind["ingredients"]}
-    groups = [
-        ("berry", f"同じきのみ({p['berry']})", "berry_energy_per_day",
-         lambda q: q["type"] == p["type"]),
-        ("ing", "同じ食材を持つ個体", "ingredient_total_per_day",
-         lambda q, r: bool(ing_set & set(r["ingredients"]))),
-        ("skill", f"同じメインスキル({p['skill_ja']})", "skill_per_day",
-         lambda q: q["skill"] == p["skill"]),
-    ]
-    # とくいに対応する比較を先頭に
-    order = {"Berries": "berry", "All": "berry", "Ingredients": "ing", "Skills": "skill"}[p["specialty"]]
+    fin = final_form(ind)
+    mine_all = {lv: calc(fin, lv) for lv in COMPARE_LEVELS}
+    # 食材は共通の食材ごとに、その食材の個数/日で比べる (今回たくさん取れる食材から順に)
+    ing_names = sorted(set(fin["ingredients"]), key=lambda n: -mine_all[EVAL_LEVEL]["ingredients_per_day"].get(n, 0))
+    groups = [("berry", f"同じきのみ({p['berry']})", "berry_energy_per_day", lambda q, fr: q["type"] == p["type"])]
+    for n in ing_names:
+        groups.append((f"ing:{n}", f"同じ食材({n})", n, lambda q, fr, n=n: n in fr["ingredients"]))
+    groups.append(("skill", f"同じメインスキル({p['skill_ja']})", "skill_per_day",
+                   lambda q, fr: q["skill"] == p["skill"]))
+    # とくいに対応する比較を先頭に (食材タイプは一番多い食材)
+    order = {"Berries": "berry", "All": "berry", "Ingredients": f"ing:{ing_names[0]}",
+             "Skills": "skill"}[p["specialty"]]
     groups.sort(key=lambda g: g[0] != order)
 
+    def value(c, metric):
+        return c[metric] if metric in METRIC_JA else c["ingredients_per_day"].get(metric, 0)
+
+    mine_req, mine_ok = required_status(ind)
     out = []
     for key, title, metric, pred in groups:
-        matched = []
+        same, other = [], []
         for r in records:
             if r["id"] == exclude_id:
                 continue
             q = POKEMON_BY_EN[r["name_en"]]
-            if q["specialty"] != p["specialty"]:  # とくいが同じ個体とだけ比較する
-                continue
-            ok = pred(q, r) if key == "ing" else pred(q)
-            if ok:
-                matched.append(r)
+            if pred(q, final_form(r)):
+                (same if q["specialty"] == p["specialty"] else other).append(r)
+        matched = same + other  # とくいが違う個体は参考として後ろに
         mark = "【とくい】" if key == order else ""
+        label_metric = METRIC_JA.get(metric, f"{metric}/日")
         if not matched:
             out.append(f"### {mark}{title}: 記録なし")
             continue
-        out.append(f"### {mark}{title} — 比較指標: {METRIC_JA[metric]}")
+        out.append(f"### {mark}{title} — 比較指標: {label_metric}")
         lines = ["| 個体 | " + " | ".join(f"Lv{lv}" for lv in COMPARE_LEVELS) + " | 判定 |",
                  "|---|" + "---:|" * len(COMPARE_LEVELS) + "---|"]
-        mine = [calc(final_form(ind), lv)[metric] for lv in COMPARE_LEVELS]
-        mine_req, mine_ok = required_status(ind)
-        d = 2 if metric == "skill_per_day" else 0
-        evo = f"→{final_form(ind)['name']}" if final_form(ind)["name"] != ind["name"] else ""
+        mine = [value(mine_all[lv], metric) for lv in COMPARE_LEVELS]
+        d = 2 if metric == "skill_per_day" else 1 if metric not in METRIC_JA else 0
+        evo = f"→{fin['name']}" if fin["name"] != ind["name"] else ""
         lines.append(f"| **今回**{evo} | " + " | ".join(f"**{fmt(v, d)}**" for v in mine) + " | |")
         for r in matched:
             fr = final_form(r)
-            theirs = [calc(fr, lv)[metric] for lv in COMPARE_LEVELS]
+            q = POKEMON_BY_EN[r["name_en"]]
+            ref = q["specialty"] != p["specialty"]
+            theirs = [value(calc(fr, lv), metric) for lv in COMPARE_LEVELS]
             diff = (mine[-1] - theirs[-1]) / theirs[-1] * 100 if theirs[-1] else 0
             verdict = "今回が強い" if diff > 1 else "前の方が強い" if diff < -1 else "ほぼ同等"
             their_req, their_ok = required_status(r)
-            if fr["name_en"] != final_form(ind)["name_en"]:  # 必須サブスキルは同じ種族同士でだけ考慮
+            if fr["name_en"] != fin["name_en"]:  # 必須サブスキルは同じ種族同士でだけ考慮
                 mine_ok_here, their_ok = True, True
             else:
                 mine_ok_here = mine_ok
@@ -766,14 +771,20 @@ def compare(ind, records, exclude_id=None):
                 verdict = "今回が強い(前は必須サブスキルなし)"
             elif their_ok and not mine_ok_here:
                 verdict = "前の方が強い(今回は必須サブスキルなし)"
+            if ref:
+                verdict = "参考: " + verdict
             evo = f"→{fr['name']}" if fr["name"] != r["name"] else ""
             label = f"#{r['id']} {r['name']}{evo}({r['status']}) {r['nature'] or ''}"
+            if ref:
+                label += f" [参考・とくい:{q['specialty_ja']}]"
             if not their_ok:
                 label += " ⚠️必須なし"
             lines.append(f"| {label} | " + " | ".join(fmt(v, d) for v in theirs)
                          + f" | {verdict} ({diff:+.1f}%) |")
         out.append("\n".join(lines))
-    out.append(f"※ とくいが同じ({p['specialty_ja']})個体とだけ比較。判定は Lv{EVAL_LEVEL} の値で比較。最終進化に換算した値 (→ で表示)。進化先が複数あるポケモンは現在の姿のまま比較します。")
+    out.append(f"※ 判定は Lv{EVAL_LEVEL} の値で比較。とくいが違う個体は [参考] として後ろに表示。"
+               "食材は共通の食材の個数/日で比較。最終進化に換算した値 (→ で表示)。"
+               "進化先が複数あるポケモンは現在の姿のまま比較します。")
     return "\n\n".join(out)
 
 
