@@ -126,5 +126,37 @@
       "ingredient_total_per_day": 10.32,
       "skill_per_day": 2.55
     }
+  },
+  {
+    "id": 5,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:18",
+    "name": "ジュカイン",
+    "name_en": "Sceptile",
+    "level": 57,
+    "nature": "きまぐれ",
+    "subskills": [
+      "きのみの数S",
+      "スキル確率アップM",
+      "スキルレベルアップM",
+      "最大所持数アップM",
+      "おてつだいボーナス"
+    ],
+    "ingredients": [
+      "とくせんエッグ",
+      "めざましコーヒー",
+      "ふといながねぎ"
+    ],
+    "skill_level": 6,
+    "rp": 4838,
+    "ribbon": 2,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 17697.59,
+      "ingredient_total_per_day": 8.37,
+      "skill_per_day": 1.89
+    }
   }
 ]
