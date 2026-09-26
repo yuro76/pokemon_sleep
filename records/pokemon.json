@@ -987,5 +987,73 @@
       "ingredient_total_per_day": 74.72,
       "skill_per_day": 1.11
     }
+  },
+  {
+    "id": 31,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:38",
+    "name": "カメックス",
+    "name_en": "Blastoise",
+    "level": 31,
+    "nature": "むじゃき",
+    "subskills": [
+      "ゆめのかけらボーナス",
+      "食材確率アップM",
+      "おてつだいスピードS",
+      "最大所持数アップM",
+      "最大所持数アップL"
+    ],
+    "ingredients": [
+      "モーモーミルク",
+      "モーモーミルク",
+      "モーモーミルク"
+    ],
+    "skill_level": 3,
+    "rp": 1934,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 5815.78,
+      "ingredient_total_per_day": 74.36,
+      "skill_per_day": 0.69
+    }
+  },
+  {
+    "id": 32,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:38",
+    "name": "バクフーン",
+    "name_en": "Typhlosion",
+    "level": 37,
+    "nature": "すなお",
+    "subskills": [
+      "最大所持数アップS",
+      "きのみの数S",
+      "スキル確率アップS",
+      "食材確率アップS",
+      "おてつだいスピードM"
+    ],
+    "ingredients": [
+      "あったかジンジャー",
+      "あったかジンジャー",
+      "ピュアなオイル"
+    ],
+    "skill_level": 2,
+    "rp": 1941,
+    "ribbon": 2,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 20324.46,
+      "ingredient_total_per_day": 28.12,
+      "skill_per_day": 2.35
+    }
   }
 ]
