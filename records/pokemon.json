@@ -254,5 +254,37 @@
       "ingredient_total_per_day": 20.68,
       "skill_per_day": 2.11
     }
+  },
+  {
+    "id": 9,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:59",
+    "name": "カイリュー",
+    "name_en": "Dragonite",
+    "level": 41,
+    "nature": "まじめ",
+    "subskills": [
+      "おてつだいボーナス",
+      "食材確率アップM",
+      "スキルレベルアップM",
+      "おてつだいスピードS",
+      "ゆめのかけらボーナス"
+    ],
+    "ingredients": [
+      "げきからハーブ",
+      "げきからハーブ",
+      "げきからハーブ"
+    ],
+    "skill_level": 3,
+    "rp": 2889,
+    "ribbon": 0,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 7952.81,
+      "ingredient_total_per_day": 75.17,
+      "skill_per_day": 1.14
+    }
   }
 ]
