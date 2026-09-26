@@ -409,8 +409,8 @@ GOLD = ["Berry Finding S", "Dream Shard Bonus", "Energy Recovery Bonus", "Helpin
 BLUE = ["Helping Speed M", "Ingredient Finder M", "Inventory Up L", "Inventory Up M",
         "Skill Level Up S", "Skill Trigger M"]
 WHITE = ["Helping Speed S", "Ingredient Finder S", "Inventory Up S", "Skill Trigger S"]
-# サブスキル1枠あたりの出現の重み (推定値。金 < 青 < 白 の順に出にくい)。実測値が分かれば調整する
-SUBSKILL_WEIGHT = {**{s: 4.3 for s in GOLD}, **{s: 6.0 for s in BLUE}, **{s: 8.5 for s in WHITE}}
+# サブスキル1枠あたりの出現の重み。全サブスキル同じ確率でつく前提 (出現率を反映したい場合はここを変える)
+SUBSKILL_WEIGHT = {s: 1.0 for s in GOLD + BLUE + WHITE}
 
 
 @functools.lru_cache(maxsize=None)
@@ -723,7 +723,7 @@ def cmd_eval(args):
     for m in PERCENTILE_METRICS:
         mark = "**【とくい】**" if m in main else ""
         print(f"| {METRIC_JA[m]} | {'**' if mark else ''}{pct[m]:.1f}%{'**' if mark else ''} | {mark} |")
-    print("\n※ せいかく(25種均等)・サブスキル(金<青<白の推定出現率)・食材の並び(均等)をすべての組み合わせで計算した順位。")
+    print("\n※ せいかく(25種均等)・サブスキル(全17種が同じ確率)・食材の並び(均等)をすべての組み合わせで計算した順位。")
     print("\n" + compare(ind, load_records(), exclude_id=args.exclude_id))
 
 
