@@ -1259,5 +1259,73 @@
       "ingredient_total_per_day": 38.78,
       "skill_per_day": 0.95
     }
+  },
+  {
+    "id": 39,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:44",
+    "name": "タマザラシ (ホリデー)",
+    "name_en": "Spheal (Holiday)",
+    "level": 32,
+    "nature": "てれや",
+    "subskills": [
+      "スキル確率アップM",
+      "おてつだいスピードM",
+      "食材確率アップM",
+      "リサーチEXPボーナス",
+      "最大所持数アップL"
+    ],
+    "ingredients": [
+      "ピュアなオイル",
+      "ピュアなオイル",
+      "ピュアなオイル"
+    ],
+    "skill_level": 2,
+    "rp": 1277,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 5768.06,
+      "ingredient_total_per_day": 24.55,
+      "skill_per_day": 2.41
+    }
+  },
+  {
+    "id": 40,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:44",
+    "name": "オーダイル",
+    "name_en": "Feraligatr",
+    "level": 26,
+    "nature": "ようき",
+    "subskills": [
+      "きのみの数S",
+      "最大所持数アップM",
+      "最大所持数アップS",
+      "おてつだいスピードS",
+      "食材確率アップS"
+    ],
+    "ingredients": [
+      "マメミート",
+      "ピュアなオイル",
+      "ピュアなオイル"
+    ],
+    "skill_level": 3,
+    "rp": 1560,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 20077.45,
+      "ingredient_total_per_day": 23.83,
+      "skill_per_day": 2.11
+    }
   }
 ]
