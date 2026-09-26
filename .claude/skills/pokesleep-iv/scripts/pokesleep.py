@@ -378,7 +378,6 @@ def compute(name_en, level, nat, sub, ings, ribbon, evo):
         "berry_energy_per_day": berries * bstr,
         "ingredients_per_day": {ing_ja(k): v for k, v in per_ing.items()},
         "ingredient_total_per_day": sum(per_ing.values()),
-        "ingredient_energy_per_day": sum(v * DATA["ingredients"][k]["strength"] for k, v in per_ing.items()),
         "skill_per_day": awake * skill_rate + nt["skill"],
         "night_skill": nt["skill"],
     }
@@ -446,7 +445,7 @@ def nature_distribution():
     return dist
 
 
-PERCENTILE_METRICS = ["berry_energy_per_day", "ingredient_energy_per_day", "skill_per_day"]
+PERCENTILE_METRICS = ["berry_energy_per_day", "ingredient_total_per_day", "skill_per_day"]
 
 
 def percentile(ind, level=None):
@@ -542,13 +541,12 @@ def fmt(v, d=1):
 
 
 def main_metric(p):
-    return {"Berries": "berry_energy_per_day", "Ingredients": "ingredient_energy_per_day",
+    return {"Berries": "berry_energy_per_day", "Ingredients": "ingredient_total_per_day",
             "Skills": "skill_per_day", "All": "berry_energy_per_day"}[p["specialty"]]
 
 
 METRIC_JA = {
     "berry_energy_per_day": "きのみエナジー/日",
-    "ingredient_energy_per_day": "食材エナジー/日",
     "ingredient_total_per_day": "食材個数/日",
     "skill_per_day": "スキル回数/日",
 }
@@ -588,8 +586,7 @@ def stats_table(ind, levels):
         ("朝までに所持数が満杯になる確率", [f"{r['full_prob'] * 100:.0f}%" for r in rows]),
         ("きのみ個数/日", [fmt(r["berries_per_day"]) for r in rows]),
         ("**きのみエナジー/日**", [fmt(r["berry_energy_per_day"], 0) for r in rows]),
-        ("食材個数/日", [fmt(r["ingredient_total_per_day"]) for r in rows]),
-        ("**食材エナジー/日**", [fmt(r["ingredient_energy_per_day"], 0) for r in rows]),
+        ("**食材個数/日**", [fmt(r["ingredient_total_per_day"]) for r in rows]),
         ("**スキル回数/日**", [fmt(r["skill_per_day"], 2) for r in rows]),
         ("　うち夜のスキル", [fmt(r["night_skill"], 2) for r in rows]),
     ]
@@ -620,7 +617,7 @@ def compare(ind, records, exclude_id=None):
     groups = [
         ("berry", f"同じきのみ({p['berry']})", "berry_energy_per_day",
          lambda q: q["type"] == p["type"]),
-        ("ing", "同じ食材を持つ個体", "ingredient_energy_per_day",
+        ("ing", "同じ食材を持つ個体", "ingredient_total_per_day",
          lambda q, r: bool(ing_set & set(r["ingredients"]))),
         ("skill", f"同じメインスキル({p['skill_ja']})", "skill_per_day",
          lambda q: q["skill"] == p["skill"]),
@@ -714,7 +711,7 @@ def cmd_eval(args):
     fin_eval = final_form(ind)
     pct = percentile(fin_eval, EVAL_LEVEL)
     p = POKEMON_BY_EN[ind["name_en"]]
-    main = {"Berries": ["berry_energy_per_day"], "Ingredients": ["ingredient_energy_per_day"],
+    main = {"Berries": ["berry_energy_per_day"], "Ingredients": ["ingredient_total_per_day"],
             "Skills": ["skill_per_day"], "All": PERCENTILE_METRICS}[p["specialty"]]
     evo = f"({fin_eval['name']}に進化した場合)" if fin_eval["name"] != ind["name"] else ""
     print(f"\n### 個体ランク: Lv{EVAL_LEVEL}{evo}の{POKEMON_BY_EN[fin_eval['name_en']]['name_ja']}の中で\n")
@@ -747,14 +744,14 @@ def cmd_list(args):
     if not records:
         print("記録はありません")
         return
-    print("| ID | ポケモン | Lv | 状態 | せいかく | サブスキル | 食材 | きのみE/日@80 | 食材E/日@80 | スキル/日@80 |")
+    print("| ID | ポケモン | Lv | 状態 | せいかく | サブスキル | 食材 | きのみE/日@80 | 食材個数/日@80 | スキル/日@80 |")
     print("|---:|---|---:|---|---|---|---|---:|---:|---:|")
     for r in records:
         c = calc(r, EVAL_LEVEL)
         print(f"| {r['id']} | {r['name']}{'「' + r['nickname'] + '」' if r.get('nickname') else ''} | "
               f"{r['level']} | {r['status']} | {r['nature'] or '-'} | {' / '.join(r['subskills'])} | "
               f"{' / '.join(r['ingredients'])} | {fmt(c['berry_energy_per_day'], 0)} | "
-              f"{fmt(c['ingredient_energy_per_day'], 0)} | {fmt(c['skill_per_day'], 2)} |")
+              f"{fmt(c['ingredient_total_per_day'])} | {fmt(c['skill_per_day'], 2)} |")
 
 
 def cmd_update(args):
