@@ -222,5 +222,37 @@
       "ingredient_total_per_day": 23.97,
       "skill_per_day": 1.98
     }
+  },
+  {
+    "id": 8,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:57",
+    "name": "ライチュウ",
+    "name_en": "Raichu",
+    "level": 56,
+    "nature": "すなお",
+    "subskills": [
+      "げんき回復ボーナス",
+      "きのみの数S",
+      "スキル確率アップM",
+      "おてつだいボーナス",
+      "スキル確率アップS"
+    ],
+    "ingredients": [
+      "とくせんリンゴ",
+      "あったかジンジャー",
+      "あったかジンジャー"
+    ],
+    "skill_level": 2,
+    "rp": 3479,
+    "ribbon": 3,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 20433.49,
+      "ingredient_total_per_day": 20.68,
+      "skill_per_day": 2.11
+    }
   }
 ]
