@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ポケモン基礎データを上流から取得して data/pokemon.json を再生成する。
+"""ポケモン基礎データ・イベントデータを上流から取得して data/pokemon.json と data/events.json を再生成する。
 
 データ元: https://github.com/nitoyon/pokesleep-tool (MIT License)
 新ポケモン追加や数値調整のアップデートがあったら実行する:
@@ -13,6 +13,7 @@ from pathlib import Path
 
 BASE = "https://raw.githubusercontent.com/nitoyon/pokesleep-tool/main/src"
 OUT = Path(__file__).resolve().parent.parent / "data" / "pokemon.json"
+EVENTS_OUT = OUT.with_name("events.json")
 
 # きのみ名はタイプで一意に決まる
 BERRY_JA = {
@@ -41,6 +42,13 @@ INGREDIENT_STRENGTH = {
 }
 
 SPECIALTY_JA = {"Berries": "きのみ", "Ingredients": "食材", "Skills": "スキル", "All": "オール"}
+
+# 上流の表記揺れ ("snozing") も吸収する
+SLEEP_TYPE_JA = {"dozing": "うとうと", "snoozing": "すやすや", "snozing": "すやすや", "slumbering": "ぐっすり"}
+
+# src/i18n/ja/common.json の area と同じ順 (フィールドの index)
+AREA_JA = ["ワカクサ本島", "シアンの砂浜", "トープ洞窟", "ウノハナ雪原", "ラピスラズリ湖畔",
+           "ゴールド旧発電所", "アンバー渓谷", "ワカクサ本島 EX", "シアンの砂浜 EX"]
 
 
 def fetch(path):
@@ -91,6 +99,8 @@ def main():
             "evolutionCount": p["evolutionCount"],
             "evolutionLeft": p["evolutionLeft"],
             "form": p.get("form"),
+            "arrival": p.get("arrival"),
+            "sleep_type": SLEEP_TYPE_JA.get(p.get("sleepType")),
             "mythical": "mythIng" in p,
             "ingredients": ing_options(p),
         })
@@ -109,6 +119,27 @@ def main():
     }
     OUT.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"wrote {len(out)} pokemon -> {OUT}")
+
+    events = fetch("data/event.json")
+    ja_events = fetch("i18n/ja/events.json")["events"]
+
+    def event_ja(name):
+        ja = ja_events.get(name, name)
+        # "$t(events.super skill week) vol.3" のような参照を展開
+        if ja.startswith("$t(events."):
+            key, rest = ja[len("$t(events."):].split(")", 1)
+            ja = ja_events.get(key, key) + rest
+        return ja
+
+    ev = {
+        "source": "https://github.com/nitoyon/pokesleep-tool (MIT License)",
+        "updated": date.today().isoformat(),
+        "areas": AREA_JA,
+        "bonus": [{**e, "name_ja": event_ja(e["name"])} for e in events["bonus"]],
+        "drowsy": events["drowsy"],
+    }
+    EVENTS_OUT.write_text(json.dumps(ev, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    print(f"wrote {len(ev['bonus'])} bonus events -> {EVENTS_OUT}")
 
 
 if __name__ == "__main__":

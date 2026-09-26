@@ -19,7 +19,26 @@
 
 詳細は [.claude/skills/pokesleep-iv/SKILL.md](.claude/skills/pokesleep-iv/SKILL.md)。
 
+## コマンド
+
+### `/field-ranking` — 次の週のフィールドランキング
+
+次の週(月曜4:00〜)にどのフィールドへ行くのが良いかをランキングで出します。
+
+1. イベントを確認(`data/events.json` + Web検索)。特定フィールドにメリットがあるイベントや、
+   新規登場ポケモンが出るフィールドを優先
+2. イベントがなければ、厳選状況(`records/pokemon.json`)と各フィールドの出現ポケモンを照らし合わせ、
+   **食材タイプで厳選完了できていないポケモン**が多く出るフィールドを優先
+
+`/field-ranking 2026-10-05` のように週の開始日を、`/field-ranking アンバー渓谷は未開放` のように希望を付けられます。
+中身は `python3 .claude/skills/pokesleep-iv/scripts/field_rank.py --help` を参照。
+
 ## データ
 
-ポケモンの基礎データは [nitoyon/pokesleep-tool](https://github.com/nitoyon/pokesleep-tool) (MIT License) から生成しています。
+ポケモンの基礎データ・イベントは [nitoyon/pokesleep-tool](https://github.com/nitoyon/pokesleep-tool) (MIT License) から生成しています。
 更新: `python3 .claude/skills/pokesleep-iv/scripts/update_data.py`
+
+フィールドの出現ポケモンは [Serebii](https://www.serebii.net/pokemonsleep/locations/)
+(取得できない環境では [YoheiOhto/sleepbox-compass](https://github.com/YoheiOhto/sleepbox-compass) (MIT License) の
+Serebii 由来データ)から生成しています。ワカクサ本島は未収録です。
+更新: `python3 .claude/skills/pokesleep-iv/scripts/update_fields.py`
