@@ -582,5 +582,38 @@
       "ingredient_total_per_day": 9.65,
       "skill_per_day": 4.1
     }
+  },
+  {
+    "id": 19,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 23:10",
+    "name": "デンヂムシ",
+    "name_en": "Charjabug",
+    "level": 20,
+    "nature": "おっとり",
+    "subskills": [
+      "食材確率アップM",
+      "睡眠EXPボーナス",
+      "おてつだいボーナス",
+      "食材確率アップS",
+      "おてつだいスピードS"
+    ],
+    "ingredients": [
+      "めざましコーヒー",
+      "あじわいキノコ",
+      "あじわいキノコ"
+    ],
+    "skill_level": 2,
+    "rp": 703,
+    "ribbon": 0,
+    "mint": false,
+    "evolution_count": null,
+    "nickname": "クワガノン★",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 4755.81,
+      "ingredient_total_per_day": 43.34,
+      "skill_per_day": 0.97
+    }
   }
 ]
