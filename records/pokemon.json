@@ -1361,5 +1361,39 @@
       "ingredient_total_per_day": 17.93,
       "skill_per_day": 3.61
     }
+  },
+  {
+    "id": 42,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:49",
+    "name": "ヌイコグマ",
+    "name_en": "Stufful",
+    "level": 13,
+    "nature": "おっとり",
+    "subskills": [
+      "睡眠EXPボーナス",
+      "食材確率アップS",
+      "最大所持数アップS",
+      "おてつだいスピードS",
+      "おてつだいボーナス"
+    ],
+    "ingredients": [
+      "ワカクサコーン",
+      "マメミート",
+      "ワカクサコーン"
+    ],
+    "skill_level": 1,
+    "rp": 567,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "キープ",
+    "memo": "コーン集め用 (ABA)",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 3735.99,
+      "ingredient_total_per_day": 55.78,
+      "skill_per_day": 0.33
+    }
   }
 ]
