@@ -779,6 +779,10 @@ def cmd_eval(args):
         print(f"| {METRIC_JA[m]} | {'**' if mark else ''}{pct[m]:.1f}%{'**' if mark else ''} | {mark} |")
     print("\n※ せいかく(25種均等)・サブスキル(全17種が同じ確率)・食材の並び(均等)をすべての組み合わせで計算した順位。")
     req, ok = required_status(ind)
+    fin_name = final_form(ind)["name"]
+    raw_req = json.loads(REQUIRED.read_text(encoding="utf-8")) if REQUIRED.exists() else {}
+    if fin_name not in raw_req:
+        print(f"※ 必須サブスキル: {fin_name}は未確認 → ユーザーに必須サブスキルがあるか確認すること")
     if req:
         print(f"※ 必須サブスキル: {required_ja(req)} → "
               + ("満たしている ✅(満たさない個体より常に上として順位を計算)" if ok
@@ -851,12 +855,15 @@ def cmd_require(args):
         if not raw:
             print("必須サブスキルの設定はありません")
         for name, reqs in raw.items():
-            print(f"- {name}: {' と '.join(reqs)}")
+            print(f"- {name}: {' と '.join(reqs) or '必須なし(確認済み)'}")
         return
     p = find_pokemon(args.name)
     if args.clear:
         raw.pop(p["name_ja"], None)
         print(f"{p['name_ja']}の必須サブスキルを解除しました")
+    elif args.none:
+        raw[p["name_ja"]] = []
+        print(f"{p['name_ja']}: 必須サブスキルなし(確認済み)として記録しました")
     else:
         if not args.subskills:
             fail("サブスキルを指定してください (どれか1つでよい場合は \"A|B\")")
@@ -881,7 +888,9 @@ def main():
     s.add_argument("--status", choices=["厳選完了", "キープ"]); s.set_defaults(f=cmd_update)
     s = sub.add_parser("delete"); s.add_argument("id", type=int); s.set_defaults(f=cmd_delete)
     s = sub.add_parser("require"); s.add_argument("name", nargs="?"); s.add_argument("subskills", nargs="*")
-    s.add_argument("--clear", action="store_true"); s.set_defaults(f=cmd_require)
+    s.add_argument("--clear", action="store_true")
+    s.add_argument("--none", action="store_true", help="必須なしを確認済みとして記録")
+    s.set_defaults(f=cmd_require)
     args = ap.parse_args()
     args.f(args)
 
