@@ -1327,5 +1327,39 @@
       "ingredient_total_per_day": 23.83,
       "skill_per_day": 2.11
     }
+  },
+  {
+    "id": 41,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:45",
+    "name": "ブースター",
+    "name_en": "Flareon",
+    "level": 32,
+    "nature": "さみしがり",
+    "subskills": [
+      "おてつだいスピードS",
+      "最大所持数アップS",
+      "おてつだいスピードM",
+      "スキル確率アップS",
+      "食材確率アップS"
+    ],
+    "ingredients": [
+      "モーモーミルク",
+      "リラックスカカオ",
+      "リラックスカカオ"
+    ],
+    "skill_level": 2,
+    "rp": 1175,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 7601.52,
+      "ingredient_total_per_day": 17.93,
+      "skill_per_day": 3.61
+    }
   }
 ]
