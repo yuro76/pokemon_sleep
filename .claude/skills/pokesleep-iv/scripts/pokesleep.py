@@ -20,6 +20,7 @@
   "skill_level": 2,               # 任意
   "rp": 812,                      # 任意: スクショのRP。計算値と照合して読み取りミスを検出
   "ribbon": 0,                    # 任意: おやすみリボンの段階 (0〜4)
+  "mint": false,                  # 任意: ミントでせいかく補正を消している (せいかく欄に葉マーク・「特徴なし」表示)
   "evolution_count": 1,           # 任意: 実際に進化させた回数 (最大所持数+5/回)。省略時は進化段階ぶん
   "nickname": "", "memo": ""      # 任意
 }
@@ -185,6 +186,7 @@ def parse_individual(raw):
         "skill_level": raw.get("skill_level"),
         "rp": raw.get("rp"),
         "ribbon": raw.get("ribbon", 0),
+        "mint": bool(raw.get("mint", False)),
         "evolution_count": raw.get("evolution_count"),
         "nickname": raw.get("nickname", ""),
         "memo": raw.get("memo", ""),
@@ -201,6 +203,11 @@ def js_round(v):
 def trunc(v, n):
     N = 10 ** n
     return math.floor(round(v * N, 6)) / N
+
+
+def ind_nature_effect(ind):
+    """ミント(せいかくの葉マーク)で補正を消している個体は補正なし"""
+    return (None, None) if ind.get("mint") else nature_effect(ind["nature"])
 
 
 def nature_effect(nature_ja):
@@ -421,7 +428,7 @@ def evolution_count(ind):
 
 def calc(ind, level=None, seed=True):
     level = level or ind["level"]
-    up, down = nature_effect(ind["nature"])
+    up, down = ind_nature_effect(ind)
     subs = [SUBSKILL_JA2EN[s] for s in ind["subskills"]]
     if seed:
         subs = seeded(subs)
@@ -558,7 +565,7 @@ def calc_rp(ind):
     p = POKEMON_BY_EN[ind["name_en"]]
     c = calc(ind, seed=False)  # RPは画面どおりのサブスキル
     level = ind["level"]
-    up, down = nature_effect(ind["nature"])
+    up, down = ind_nature_effect(ind)
     active = [SUBSKILL_JA2EN[s] for s, lv in zip(ind["subskills"], SUBSKILL_UNLOCK) if level >= lv]
     freq = base_frequency(p, level, nature_factors(up, down)[0], subskill_key(active)[0],
                           ind.get("ribbon", 0) or 0, False)  # RPにはおてつだいボーナスを含めない
@@ -641,8 +648,9 @@ def seed_line(ind):
 
 def describe(ind):
     p = POKEMON_BY_EN[ind["name_en"]]
-    up, down = nature_effect(ind["nature"])
-    nat = (f"{ind['nature']} (▲{NATURE_EFFECT_JA[up]} ▼{NATURE_EFFECT_JA[down]})" if up
+    up, down = ind_nature_effect(ind)
+    nat = (f"{ind['nature']} (ミントで補正なし)" if ind.get("mint") else
+           f"{ind['nature']} (▲{NATURE_EFFECT_JA[up]} ▼{NATURE_EFFECT_JA[down]})" if up
            else f"{ind['nature']} (補正なし)" if ind["nature"] else "未入力")
     lines = [
         f"## {p['name_ja']} Lv{ind['level']}" + (f"「{ind['nickname']}」" if ind.get("nickname") else ""),
@@ -878,7 +886,7 @@ def cmd_update(args):
         fail(f"#{args.id} は見つかりません")
     patch = read_input(args.input)
     base = {k: rec.get(k) for k in ("name", "level", "nature", "subskills", "ingredients", "skill_level",
-                                     "rp", "ribbon", "evolution_count", "nickname", "memo")}
+                                     "rp", "ribbon", "mint", "evolution_count", "nickname", "memo")}
     base.update(patch)
     ind = parse_individual(base)
     rec.update(ind)
