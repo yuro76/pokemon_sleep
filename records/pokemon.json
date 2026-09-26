@@ -1,1 +1,322 @@
-[]
+[
+  {
+    "id": 1,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:04",
+    "name": "サーナイト",
+    "name_en": "Gardevoir",
+    "level": 54,
+    "nature": "なまいき",
+    "subskills": [
+      "リサーチEXPボーナス",
+      "スキル確率アップM",
+      "おてつだいスピードM",
+      "スキル確率アップS",
+      "おてつだいボーナス"
+    ],
+    "ingredients": [
+      "とくせんリンゴ",
+      "とくせんリンゴ",
+      "とくせんリンゴ"
+    ],
+    "skill_level": 6,
+    "rp": 6089,
+    "ribbon": 3,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 8268.82,
+      "ingredient_total_per_day": 17.74,
+      "skill_per_day": 3.89
+    }
+  },
+  {
+    "id": 2,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:10",
+    "name": "ルカリオ",
+    "name_en": "Lucario",
+    "level": 53,
+    "nature": "しんちょう",
+    "subskills": [
+      "きのみの数S",
+      "スキル確率アップM",
+      "おてつだいスピードM",
+      "食材確率アップM",
+      "スキルレベルアップS"
+    ],
+    "ingredients": [
+      "ピュアなオイル",
+      "ピュアなオイル",
+      "ピュアなオイル"
+    ],
+    "skill_level": 8,
+    "rp": 8235,
+    "ribbon": 3,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 14765.32,
+      "ingredient_total_per_day": 16.21,
+      "skill_per_day": 3.49
+    }
+  },
+  {
+    "id": 3,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:13",
+    "name": "ラティオス",
+    "name_en": "Latios",
+    "level": 33,
+    "nature": "しんちょう",
+    "subskills": [
+      "スキル確率アップM",
+      "最大所持数アップL",
+      "食材確率アップS",
+      "おてつだいスピードS",
+      "睡眠EXPボーナス"
+    ],
+    "ingredients": [
+      "あんみんトマト",
+      "あんみんトマト",
+      "とくせんエッグ"
+    ],
+    "skill_level": 6,
+    "rp": 5658,
+    "ribbon": 1,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 8225.09,
+      "ingredient_total_per_day": 18.36,
+      "skill_per_day": 2.05
+    }
+  },
+  {
+    "id": 4,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:16",
+    "name": "ラティアス",
+    "name_en": "Latias",
+    "level": 52,
+    "nature": "てれや",
+    "subskills": [
+      "最大所持数アップL",
+      "おてつだいスピードM",
+      "スキルレベルアップM",
+      "スキル確率アップS",
+      "おてつだいボーナス"
+    ],
+    "ingredients": [
+      "あんみんトマト",
+      "ずっしりカボチャ",
+      "あんみんトマト"
+    ],
+    "skill_level": 6,
+    "rp": 5464,
+    "ribbon": 2,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 9861.44,
+      "ingredient_total_per_day": 10.32,
+      "skill_per_day": 2.92
+    }
+  },
+  {
+    "id": 5,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:18",
+    "name": "ジュカイン",
+    "name_en": "Sceptile",
+    "level": 57,
+    "nature": "きまぐれ",
+    "subskills": [
+      "きのみの数S",
+      "スキル確率アップM",
+      "スキルレベルアップM",
+      "最大所持数アップM",
+      "おてつだいボーナス"
+    ],
+    "ingredients": [
+      "とくせんエッグ",
+      "めざましコーヒー",
+      "ふといながねぎ"
+    ],
+    "skill_level": 6,
+    "rp": 4838,
+    "ribbon": 2,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 17697.59,
+      "ingredient_total_per_day": 8.37,
+      "skill_per_day": 1.89
+    }
+  },
+  {
+    "id": 6,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:46",
+    "name": "ライコウ",
+    "name_en": "Raikou",
+    "level": 50,
+    "nature": "まじめ",
+    "subskills": [
+      "スキルレベルアップM",
+      "最大所持数アップS",
+      "スキル確率アップM",
+      "おてつだいスピードM",
+      "最大所持数アップM"
+    ],
+    "ingredients": [
+      "マメミート",
+      "マメミート",
+      "ふといながねぎ"
+    ],
+    "skill_level": 6,
+    "rp": 4440,
+    "ribbon": 4,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 8080.16,
+      "ingredient_total_per_day": 18.18,
+      "skill_per_day": 1.45
+    }
+  },
+  {
+    "id": 7,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:52",
+    "name": "ボーマンダ",
+    "name_en": "Salamence",
+    "level": 55,
+    "nature": "さみしがり",
+    "subskills": [
+      "最大所持数アップS",
+      "おてつだいスピードM",
+      "きのみの数S",
+      "スキルレベルアップS",
+      "スキル確率アップS"
+    ],
+    "ingredients": [
+      "ほっこりポテト",
+      "ほっこりポテト",
+      "ほっこりポテト"
+    ],
+    "skill_level": 3,
+    "rp": 4024,
+    "ribbon": 3,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 27360.63,
+      "ingredient_total_per_day": 23.97,
+      "skill_per_day": 1.98
+    }
+  },
+  {
+    "id": 8,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:57",
+    "name": "ライチュウ",
+    "name_en": "Raichu",
+    "level": 56,
+    "nature": "すなお",
+    "subskills": [
+      "げんき回復ボーナス",
+      "きのみの数S",
+      "スキル確率アップM",
+      "おてつだいボーナス",
+      "スキル確率アップS"
+    ],
+    "ingredients": [
+      "とくせんリンゴ",
+      "あったかジンジャー",
+      "あったかジンジャー"
+    ],
+    "skill_level": 2,
+    "rp": 3479,
+    "ribbon": 3,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 20433.49,
+      "ingredient_total_per_day": 20.68,
+      "skill_per_day": 2.11
+    }
+  },
+  {
+    "id": 9,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:59",
+    "name": "カイリュー",
+    "name_en": "Dragonite",
+    "level": 41,
+    "nature": "まじめ",
+    "subskills": [
+      "おてつだいボーナス",
+      "食材確率アップM",
+      "スキルレベルアップM",
+      "おてつだいスピードS",
+      "ゆめのかけらボーナス"
+    ],
+    "ingredients": [
+      "げきからハーブ",
+      "げきからハーブ",
+      "げきからハーブ"
+    ],
+    "skill_level": 3,
+    "rp": 2889,
+    "ribbon": 0,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 7952.81,
+      "ingredient_total_per_day": 75.17,
+      "skill_per_day": 1.14
+    }
+  },
+  {
+    "id": 10,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 14:02",
+    "name": "ゴウカザル",
+    "name_en": "Infernape",
+    "level": 32,
+    "nature": "きまぐれ",
+    "subskills": [
+      "きのみの数S",
+      "スキル確率アップM",
+      "食材確率アップM",
+      "スキル確率アップS",
+      "おてつだいボーナス"
+    ],
+    "ingredients": [
+      "げきからハーブ",
+      "あったかジンジャー",
+      "めざましコーヒー"
+    ],
+    "skill_level": 3,
+    "rp": 2050,
+    "ribbon": 1,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 14671.9,
+      "ingredient_total_per_day": 14.79,
+      "skill_per_day": 2.22
+    }
+  }
+]
