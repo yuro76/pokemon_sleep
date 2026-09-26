@@ -318,5 +318,38 @@
       "ingredient_total_per_day": 14.79,
       "skill_per_day": 2.22
     }
+  },
+  {
+    "id": 11,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 14:09",
+    "name": "キテルグマ",
+    "name_en": "Bewear",
+    "level": 34,
+    "nature": "ずぶとい",
+    "subskills": [
+      "おてつだいボーナス",
+      "食材確率アップM",
+      "おてつだいスピードM",
+      "おてつだいスピードS",
+      "最大所持数アップS"
+    ],
+    "ingredients": [
+      "ワカクサコーン",
+      "マメミート",
+      "マメミート"
+    ],
+    "skill_level": 2,
+    "rp": 1954,
+    "ribbon": 0,
+    "mint": true,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 6557.49,
+      "ingredient_total_per_day": 88.98,
+      "skill_per_day": 0.61
+    }
   }
 ]
