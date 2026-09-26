@@ -231,6 +231,19 @@ def ribbon_factor(p, ribbon):
 RIBBON_CARRY = {0: 0, 1: 1, 2: 3, 3: 6, 4: 8}
 INVENTORY_LEVEL = {"Inventory Up S": 1, "Inventory Up M": 2, "Inventory Up L": 3}
 
+# 銀タネ(サブスキルのタネ)前提: 自分の個体は S→M・M→L を全部使った想定で計算する (使用数の制限なし)。
+# 上位%の比較相手 (ランダムな個体) には適用しない。RPチェックは画面どおりのサブスキルで行う。
+ASSUME_SILVER_SEED = True
+SEED_UPGRADE = {
+    "Helping Speed S": "Helping Speed M", "Ingredient Finder S": "Ingredient Finder M",
+    "Skill Trigger S": "Skill Trigger M", "Skill Level Up S": "Skill Level Up M",
+    "Inventory Up S": "Inventory Up M", "Inventory Up M": "Inventory Up L",
+}
+
+
+def seeded(subskills_en):
+    return [SEED_UPGRADE.get(s, s) for s in subskills_en] if ASSUME_SILVER_SEED else list(subskills_en)
+
 
 def nature_factors(up, down):
     return (0.9 if up == "speed" else 1.075 if down == "speed" else 1,
@@ -392,10 +405,12 @@ def evolution_count(ind):
     return max(0, POKEMON_BY_EN[ind["name_en"]]["evolutionCount"])
 
 
-def calc(ind, level=None):
+def calc(ind, level=None, seed=True):
     level = level or ind["level"]
     up, down = nature_effect(ind["nature"])
     active = [SUBSKILL_JA2EN[s] for s, lv in zip(ind["subskills"], SUBSKILL_UNLOCK) if level >= lv]
+    if seed:
+        active = seeded(active)
     r = dict(compute(ind["name_en"], level, nature_factors(up, down), subskill_key(active),
                      tuple(ING_JA2EN[i] for i in ind["ingredients"]), ind.get("ribbon", 0) or 0,
                      evolution_count(ind)))
@@ -433,7 +448,7 @@ def required_status(ind):
     """(必須の設定, 満たすか)。最終進化の設定を使う。設定なしなら ((), True)"""
     fin = final_form(ind)
     req = required_for(fin["name_en"])
-    return req, meets_required([SUBSKILL_JA2EN[s] for s in ind["subskills"]], req)
+    return req, meets_required(seeded([SUBSKILL_JA2EN[s] for s in ind["subskills"]]), req)
 
 
 # ---------------------------------------------------------------- 上位何%
@@ -491,7 +506,7 @@ def percentile(ind, level=None):
     p = POKEMON_BY_EN[ind["name_en"]]
     mine = calc(ind, level)
     required = required_for(ind["name_en"])
-    mine_ok = meets_required([SUBSKILL_JA2EN[s] for s in ind["subskills"]], required)
+    mine_ok = meets_required(seeded([SUBSKILL_JA2EN[s] for s in ind["subskills"]]), required)
     if p["mythical"]:
         ing_dist = {tuple(ING_JA2EN[i] for i in ind["ingredients"]): 1.0}  # 幻は食材を自分で選ぶ
     else:
@@ -521,7 +536,7 @@ def percentile(ind, level=None):
 def calc_rp(ind):
     """ゲーム内RPの再現 (スクショの読み取りミス検出用)"""
     p = POKEMON_BY_EN[ind["name_en"]]
-    c = calc(ind)
+    c = calc(ind, seed=False)  # RPは画面どおりのサブスキル
     level = ind["level"]
     up, down = nature_effect(ind["nature"])
     active = [SUBSKILL_JA2EN[s] for s, lv in zip(ind["subskills"], SUBSKILL_UNLOCK) if level >= lv]
@@ -609,6 +624,9 @@ def describe(ind):
         f"- せいかく: {nat}",
         "- サブスキル: " + " / ".join(
             f"{s}{'' if ind['level'] >= lv else f'(Lv{lv}〜)'}" for s, lv in zip(ind["subskills"], SUBSKILL_UNLOCK)),
+        *([f"- 銀タネ前提: " + " / ".join(f"{a}→{DATA['subskills'][SEED_UPGRADE[SUBSKILL_JA2EN[a]]]}"
+                                          for a in ind["subskills"] if SUBSKILL_JA2EN[a] in SEED_UPGRADE)]
+          if ASSUME_SILVER_SEED and any(SUBSKILL_JA2EN[a] in SEED_UPGRADE for a in ind["subskills"]) else []),
         "- 食材: " + " / ".join(
             f"{i}×{next(o['count'] for o in p['ingredients'][k] if o['name'] == ING_JA2EN[i])}"
             f"{'' if ind['level'] >= INGREDIENT_UNLOCK[k] else f'(Lv{INGREDIENT_UNLOCK[k]}〜)'}"
@@ -777,7 +795,8 @@ def cmd_eval(args):
     for m in PERCENTILE_METRICS:
         mark = "**【とくい】**" if m in main else ""
         print(f"| {METRIC_JA[m]} | {'**' if mark else ''}{pct[m]:.1f}%{'**' if mark else ''} | {mark} |")
-    print("\n※ せいかく(25種均等)・サブスキル(全17種が同じ確率)・食材の並び(均等)をすべての組み合わせで計算した順位。")
+    print("\n※ せいかく(25種均等)・サブスキル(全17種が同じ確率)・食材の並び(均等)をすべての組み合わせで計算した順位。"
+          + ("今回の個体は銀タネ前提、比較相手はタネなし。" if ASSUME_SILVER_SEED else ""))
     req, ok = required_status(ind)
     fin_name = final_form(ind)["name"]
     raw_req = json.loads(REQUIRED.read_text(encoding="utf-8")) if REQUIRED.exists() else {}

@@ -28,7 +28,7 @@
     "snapshot_lv80": {
       "berry_energy_per_day": 8268.82,
       "ingredient_total_per_day": 17.74,
-      "skill_per_day": 3.89
+      "skill_per_day": 4.3
     }
   },
   {
@@ -90,9 +90,9 @@
     "nickname": "",
     "memo": "",
     "snapshot_lv80": {
-      "berry_energy_per_day": 7882.66,
-      "ingredient_total_per_day": 14.73,
-      "skill_per_day": 1.9
+      "berry_energy_per_day": 8225.09,
+      "ingredient_total_per_day": 18.36,
+      "skill_per_day": 2.05
     }
   },
   {
@@ -124,7 +124,7 @@
     "snapshot_lv80": {
       "berry_energy_per_day": 9861.44,
       "ingredient_total_per_day": 10.32,
-      "skill_per_day": 2.55
+      "skill_per_day": 2.92
     }
   },
   {
