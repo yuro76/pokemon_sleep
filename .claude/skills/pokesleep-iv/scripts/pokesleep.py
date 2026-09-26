@@ -548,6 +548,12 @@ def percentile(ind, level=None):
         ing_dist = {c: 1 / len(combos) for c in combos}
     ribbon, evo = ind.get("ribbon", 0) or 0, evolution_count(ind)
 
+    # 食材は一番多く取れる食材の個数/日だけで順位を出す
+    main_ing = max(mine["ingredients_per_day"], key=mine["ingredients_per_day"].get)
+
+    def value(r, m):
+        return r["ingredients_per_day"].get(main_ing, 0) if m == "ingredient_total_per_day" else r[m]
+
     above = {m: 0.0 for m in PERCENTILE_METRICS}
     for nk, npr in nature_distribution().items():
         for (sk, ok), spr in subskill_distribution(required).items():
@@ -560,9 +566,9 @@ def percentile(ind, level=None):
             for ik, ipr in ing_dist.items():
                 r = compute(p["name_en"], level, nk, sk, ik, ribbon, evo)
                 for m in PERCENTILE_METRICS:
-                    if r[m] >= mine[m] * (1 - 1e-9):
+                    if value(r, m) >= value(mine, m) * (1 - 1e-9):
                         above[m] += npr * spr * ipr
-    return {m: v * 100 for m, v in above.items()}
+    return {**{m: v * 100 for m, v in above.items()}, "main_ing": main_ing}
 
 
 def calc_rp(ind):
@@ -838,7 +844,8 @@ def cmd_eval(args):
     print("|---|---:|---|")
     for m in PERCENTILE_METRICS:
         mark = "**【とくい】**" if m in main else ""
-        print(f"| {METRIC_JA[m]} | {'**' if mark else ''}{pct[m]:.1f}%{'**' if mark else ''} | {mark} |")
+        label = f"{pct['main_ing']}/日(一番多い食材)" if m == "ingredient_total_per_day" else METRIC_JA[m]
+        print(f"| {label} | {'**' if mark else ''}{pct[m]:.1f}%{'**' if mark else ''} | {mark} |")
     print("\n※ せいかく(25種均等)・サブスキル(全17種が同じ確率)・食材の並び(均等)をすべての組み合わせで計算した順位。"
           + ("今回の個体は銀タネ前提、比較相手はタネなし。" if ASSUME_SILVER_SEED else ""))
     req, ok = required_status(ind)
