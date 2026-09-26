@@ -23,6 +23,7 @@ lookup 以外のサブコマンドは、実行前に sync と同じ処理で記�
   "skill_level": 2,               # 任意
   "rp": 812,                      # 任意: スクショのRP。計算値と照合して読み取りミスを検出
   "ribbon": 0,                    # 任意: おやすみリボンの段階 (0〜4)
+  "evolve_to": "",                # 任意: 進化先が複数あるとき (キルリア→エルレイド等) の進化先
   "mint": false,                  # 任意: ミントでせいかく補正を消している (せいかく欄に葉マーク・「特徴なし」表示)
   "evolution_count": 1,           # 任意: 実際に進化させた回数 (最大所持数+5/回)。省略時は進化段階ぶん
   "nickname": "", "memo": ""      # 任意
@@ -192,6 +193,7 @@ def parse_individual(raw):
         "rp": raw.get("rp"),
         "ribbon": raw.get("ribbon", 0),
         "mint": bool(raw.get("mint", False)),
+        "evolve_to": raw.get("evolve_to", ""),
         "evolution_count": raw.get("evolution_count"),
         "nickname": raw.get("nickname", ""),
         "memo": raw.get("memo", ""),
@@ -618,6 +620,9 @@ def final_form(ind):
         return ind
     finals = [q for q in DATA["pokemon"] if q["ancestor"] == p["ancestor"] and q["evolutionLeft"] == 0
               and q.get("form") == p.get("form")]
+    if ind.get("evolve_to"):  # 進化先が複数あるときに指定された進化先
+        want = find_pokemon(ind["evolve_to"])["name_en"]
+        finals = [q for q in finals if q["name_en"] == want]
     if len(finals) != 1:
         return ind
     q = finals[0]
@@ -719,8 +724,8 @@ def save_records(records):
 
 
 def compare(ind, records, exclude_id=None):
-    p = POKEMON_BY_EN[ind["name_en"]]
     fin = final_form(ind)
+    p = POKEMON_BY_EN[fin["name_en"]]  # 進化後のきのみ・メインスキル・とくいで比べる
     mine_all = {lv: calc(fin, lv) for lv in COMPARE_LEVELS}
     # 食材は共通の食材ごとに、その食材の個数/日で比べる (今回たくさん取れる食材から順に)
     ing_names = sorted(set(fin["ingredients"]), key=lambda n: -mine_all[EVAL_LEVEL]["ingredients_per_day"].get(n, 0))
@@ -744,7 +749,7 @@ def compare(ind, records, exclude_id=None):
         for r in records:
             if r["id"] == exclude_id:
                 continue
-            q = POKEMON_BY_EN[r["name_en"]]
+            q = POKEMON_BY_EN[final_form(r)["name_en"]]
             if pred(q, final_form(r)):
                 (same if q["specialty"] == p["specialty"] else other).append(r)
         matched = same + other  # とくいが違う個体は参考として後ろに
@@ -762,7 +767,7 @@ def compare(ind, records, exclude_id=None):
         lines.append(f"| **今回**{evo} | " + " | ".join(f"**{fmt(v, d)}**" for v in mine) + " | |")
         for r in matched:
             fr = final_form(r)
-            q = POKEMON_BY_EN[r["name_en"]]
+            q = POKEMON_BY_EN[fr["name_en"]]
             ref = q["specialty"] != p["specialty"]
             theirs = [value(calc(fr, lv), metric) for lv in COMPARE_LEVELS]
             diff = (mine[-1] - theirs[-1]) / theirs[-1] * 100 if theirs[-1] else 0
@@ -909,7 +914,7 @@ def cmd_update(args):
         fail(f"#{args.id} は見つかりません")
     patch = read_input(args.input)
     base = {k: rec.get(k) for k in ("name", "level", "nature", "subskills", "ingredients", "skill_level",
-                                     "rp", "ribbon", "mint", "evolution_count", "nickname", "memo")}
+                                     "rp", "ribbon", "mint", "evolve_to", "evolution_count", "nickname", "memo")}
     base.update(patch)
     ind = parse_individual(base)
     rec.update(ind)
