@@ -8,7 +8,8 @@
   1. イベントでメリットがあるフィールド (イベント対象フィールド・好きなきのみの固定・対象タイプが好きなきのみ)
      や、新規登場ポケモン(厳選完了していないもの)が出るフィールド
   2. イベントで差がつかなければ、食材タイプで厳選完了していないポケモンが多く出るフィールド
-     (記録なし=1点、キープのみ=0.5点。そのフィールドでしか出ないポケモンは +0.5点)
+     (記録なし=1点、キープのみ=0.2点。そのフィールドでしか出ないポケモンは 記録なし+0.5点・キープ+0.1点)
+     出現ポケモンは進化していない姿 (ゼニガメ等) だけを数える (進化した姿で出会っても厳選の手間は同じではないため)
 
 データ:
   data/events.json  … イベント (update_data.py で更新)
@@ -63,8 +64,9 @@ W_EVENT_FIELD = 3     # イベント対象フィールド
 W_NEW_POKEMON = 2     # 新規登場ポケモン (厳選完了していない) 1種ごと
 W_TYPE_MATCH = 1      # イベント対象タイプが好きなきのみに入っている (1タイプごと)
 W_UNRECORDED = 1.0    # 食材タイプで記録なし
-W_KEEP = 0.5          # 食材タイプでキープのみ
-W_EXCLUSIVE = 0.5     # そのフィールドでしか出ない
+W_KEEP = 0.2          # 食材タイプでキープのみ (候補はいるので、記録なしを優先する)
+W_EXCLUSIVE = 0.5     # そのフィールドでしか出ない (記録なし)
+W_EXCLUSIVE_KEEP = 0.1  # そのフィールドでしか出ない (キープのみ)
 
 
 def fail(msg):
@@ -162,7 +164,7 @@ def field_groups(f, sleep_types):
             continue
         for n in names:
             p = POKEMON_BY_EN.get(n)
-            if p is None:
+            if p is None or p["evolutionCount"] > 0:  # 進化していない姿だけを出現対象にする
                 continue
             for q in finals_of(p):
                 g = groups.setdefault(group_key(q), {"final": q, "spawn": set(), "sleep": set()})
@@ -352,7 +354,7 @@ def main():
                 w = W_KEEP if st == "キープ" else W_UNRECORDED
                 excl = appear.get(k, 0) == 1 and not f["expert"]
                 if excl:
-                    w += W_EXCLUSIVE
+                    w += W_EXCLUSIVE_KEEP if st == "キープ" else W_EXCLUSIVE
                 sel_score += w
                 todo.append({"name": group_label(q), "status": st, "exclusive": excl,
                              "spawn": sorted(gg["spawn"]), "sleep": sorted(gg["sleep"]),
@@ -427,9 +429,10 @@ def main():
             print("- 食材タイプはすべて厳選完了")
             continue
         for t in r["todo"]:
-            spawn = "、".join(s for s in t["spawn"] if s != t["name"])
-            print(f"- {t['name']} [{t['status']}]" + (" ★ここでしか出ない" if t["exclusive"] else "")
-                  + f" — {'・'.join(t['sleep'])}" + (f" / 出現: {spawn}" if spawn else "")
+            spawn = "、".join(t["spawn"])
+            name = t["name"] if spawn == t["name"] else f"{spawn} (→{t['name']})"
+            print(f"- {name} [{t['status']}]" + (" ★ここでしか出ない" if t["exclusive"] else "")
+                  + f" — {'・'.join(t['sleep'])}"
                   + f" / 食材: {t['ings']}")
         print()
 
