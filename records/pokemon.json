@@ -919,5 +919,73 @@
       "ingredient_total_per_day": 55.03,
       "skill_per_day": 1.43
     }
+  },
+  {
+    "id": 29,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:35",
+    "name": "ハピナス",
+    "name_en": "Blissey",
+    "level": 34,
+    "nature": "ゆうかん",
+    "subskills": [
+      "スキル確率アップS",
+      "睡眠EXPボーナス",
+      "スキルレベルアップS",
+      "スキル確率アップM",
+      "最大所持数アップM"
+    ],
+    "ingredients": [
+      "とくせんエッグ",
+      "とくせんエッグ",
+      "とくせんエッグ"
+    ],
+    "skill_level": 3,
+    "rp": 1968,
+    "ribbon": 2,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 5521.01,
+      "ingredient_total_per_day": 40.85,
+      "skill_per_day": 1.23
+    }
+  },
+  {
+    "id": 30,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:35",
+    "name": "アブリボン",
+    "name_en": "Ribombee",
+    "level": 32,
+    "nature": "おっとり",
+    "subskills": [
+      "げんき回復ボーナス",
+      "食材確率アップM",
+      "おてつだいスピードS",
+      "食材確率アップS",
+      "リサーチEXPボーナス"
+    ],
+    "ingredients": [
+      "あまいミツ",
+      "あまいミツ",
+      "あまいミツ"
+    ],
+    "skill_level": 2,
+    "rp": 1991,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 6500.2,
+      "ingredient_total_per_day": 74.72,
+      "skill_per_day": 1.11
+    }
   }
 ]
