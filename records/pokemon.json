@@ -615,5 +615,38 @@
       "ingredient_total_per_day": 43.34,
       "skill_per_day": 0.97
     }
+  },
+  {
+    "id": 20,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 23:11",
+    "name": "ウソッキー",
+    "name_en": "Sudowoodo",
+    "level": 10,
+    "nature": "まじめ",
+    "subskills": [
+      "おてつだいスピードS",
+      "最大所持数アップM",
+      "最大所持数アップL",
+      "おてつだいボーナス",
+      "スキル確率アップS"
+    ],
+    "ingredients": [
+      "あんみんトマト",
+      "ワカクサ大豆",
+      "ワカクサ大豆"
+    ],
+    "skill_level": 1,
+    "rp": 582,
+    "ribbon": 0,
+    "mint": false,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 5232.55,
+      "ingredient_total_per_day": 16.04,
+      "skill_per_day": 3.01
+    }
   }
 ]
