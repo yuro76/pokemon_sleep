@@ -681,5 +681,39 @@
       "ingredient_total_per_day": 36.62,
       "skill_per_day": 0.42
     }
+  },
+  {
+    "id": 22,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:20",
+    "name": "キルリア",
+    "name_en": "Kirlia",
+    "level": 15,
+    "nature": "きまぐれ",
+    "subskills": [
+      "おてつだいボーナス",
+      "スキル確率アップM",
+      "最大所持数アップL",
+      "スキル確率アップS",
+      "スキルレベルアップM"
+    ],
+    "ingredients": [
+      "とくせんリンゴ",
+      "ワカクサコーン",
+      "ふといながねぎ"
+    ],
+    "skill_level": 2,
+    "rp": 749,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "エルレイド",
+    "evolution_count": null,
+    "nickname": "エルレイド★",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 4823.02,
+      "ingredient_total_per_day": 6.01,
+      "skill_per_day": 2.01
+    }
   }
 ]
