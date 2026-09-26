@@ -450,5 +450,38 @@
       "ingredient_total_per_day": 17.56,
       "skill_per_day": 3.32
     }
+  },
+  {
+    "id": 15,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 23:04",
+    "name": "サンドパン",
+    "name_en": "Sandslash",
+    "level": 33,
+    "nature": "さみしがり",
+    "subskills": [
+      "おてつだいスピードS",
+      "スキル確率アップS",
+      "おてつだいボーナス",
+      "最大所持数アップM",
+      "おてつだいスピードM"
+    ],
+    "ingredients": [
+      "ずっしりカボチャ",
+      "ワカクサコーン",
+      "ワカクサコーン"
+    ],
+    "skill_level": 2,
+    "rp": 1339,
+    "ribbon": 0,
+    "mint": false,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 10014.36,
+      "ingredient_total_per_day": 21.79,
+      "skill_per_day": 3.1
+    }
   }
 ]
