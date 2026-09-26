@@ -62,5 +62,37 @@
       "ingredient_total_per_day": 16.21,
       "skill_per_day": 3.49
     }
+  },
+  {
+    "id": 3,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:13",
+    "name": "ラティオス",
+    "name_en": "Latios",
+    "level": 33,
+    "nature": "しんちょう",
+    "subskills": [
+      "スキル確率アップM",
+      "最大所持数アップL",
+      "食材確率アップS",
+      "おてつだいスピードS",
+      "睡眠EXPボーナス"
+    ],
+    "ingredients": [
+      "あんみんトマト",
+      "あんみんトマト",
+      "とくせんエッグ"
+    ],
+    "skill_level": 6,
+    "rp": 5658,
+    "ribbon": 1,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 7882.66,
+      "ingredient_total_per_day": 14.73,
+      "skill_per_day": 1.9
+    }
   }
 ]
