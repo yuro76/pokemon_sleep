@@ -242,7 +242,21 @@ SEED_UPGRADE = {
 
 
 def seeded(subskills_en):
-    return [SEED_UPGRADE.get(s, s) for s in subskills_en] if ASSUME_SILVER_SEED else list(subskills_en)
+    """5つのサブスキル (Lv10〜80の順) に銀タネを使った後の並び。
+    同じサブスキルは2つ持てないので、上げた先がすでにある場合はそのまま
+    (所持数 S+M は M→L を先に使えば S→M も上げられる、のように上げられる順で繰り返す)"""
+    out = list(subskills_en)
+    if not ASSUME_SILVER_SEED:
+        return out
+    changed = True
+    while changed:
+        changed = False
+        for i, sk in enumerate(out):
+            to = SEED_UPGRADE.get(sk)
+            if to and to not in out:
+                out[i] = to
+                changed = True
+    return out
 
 
 def nature_factors(up, down):
@@ -408,9 +422,10 @@ def evolution_count(ind):
 def calc(ind, level=None, seed=True):
     level = level or ind["level"]
     up, down = nature_effect(ind["nature"])
-    active = [SUBSKILL_JA2EN[s] for s, lv in zip(ind["subskills"], SUBSKILL_UNLOCK) if level >= lv]
+    subs = [SUBSKILL_JA2EN[s] for s in ind["subskills"]]
     if seed:
-        active = seeded(active)
+        subs = seeded(subs)
+    active = [s for s, lv in zip(subs, SUBSKILL_UNLOCK) if level >= lv]
     r = dict(compute(ind["name_en"], level, nature_factors(up, down), subskill_key(active),
                      tuple(ING_JA2EN[i] for i in ind["ingredients"]), ind.get("ribbon", 0) or 0,
                      evolution_count(ind)))
@@ -612,6 +627,13 @@ METRIC_JA = {
 }
 
 
+def seed_line(ind):
+    before = [SUBSKILL_JA2EN[s] for s in ind["subskills"]]
+    after = seeded(before)
+    ups = [f"{DATA['subskills'][a]}→{DATA['subskills'][b]}" for a, b in zip(before, after) if a != b]
+    return [f"- 銀タネ前提: {' / '.join(ups)}"] if ups else []
+
+
 def describe(ind):
     p = POKEMON_BY_EN[ind["name_en"]]
     up, down = nature_effect(ind["nature"])
@@ -624,9 +646,7 @@ def describe(ind):
         f"- せいかく: {nat}",
         "- サブスキル: " + " / ".join(
             f"{s}{'' if ind['level'] >= lv else f'(Lv{lv}〜)'}" for s, lv in zip(ind["subskills"], SUBSKILL_UNLOCK)),
-        *([f"- 銀タネ前提: " + " / ".join(f"{a}→{DATA['subskills'][SEED_UPGRADE[SUBSKILL_JA2EN[a]]]}"
-                                          for a in ind["subskills"] if SUBSKILL_JA2EN[a] in SEED_UPGRADE)]
-          if ASSUME_SILVER_SEED and any(SUBSKILL_JA2EN[a] in SEED_UPGRADE for a in ind["subskills"]) else []),
+        *seed_line(ind),
         "- 食材: " + " / ".join(
             f"{i}×{next(o['count'] for o in p['ingredients'][k] if o['name'] == ING_JA2EN[i])}"
             f"{'' if ind['level'] >= INGREDIENT_UNLOCK[k] else f'(Lv{INGREDIENT_UNLOCK[k]}〜)'}"
