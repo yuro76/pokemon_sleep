@@ -851,5 +851,73 @@
       "ingredient_total_per_day": 41.08,
       "skill_per_day": 1.48
     }
+  },
+  {
+    "id": 27,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:33",
+    "name": "ラグラージ",
+    "name_en": "Swampert",
+    "level": 35,
+    "nature": "まじめ",
+    "subskills": [
+      "きのみの数S",
+      "最大所持数アップS",
+      "おてつだいスピードS",
+      "スキル確率アップS",
+      "スキルレベルアップS"
+    ],
+    "ingredients": [
+      "ワカクサコーン",
+      "モーモーミルク",
+      "ワカクサコーン"
+    ],
+    "skill_level": 3,
+    "rp": 1998,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 22272.37,
+      "ingredient_total_per_day": 16.59,
+      "skill_per_day": 1.8
+    }
+  },
+  {
+    "id": 28,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:33",
+    "name": "ハルクジラ",
+    "name_en": "Cetitan",
+    "level": 35,
+    "nature": "すなお",
+    "subskills": [
+      "食材確率アップM",
+      "ゆめのかけらボーナス",
+      "げんき回復ボーナス",
+      "食材確率アップS",
+      "最大所持数アップS"
+    ],
+    "ingredients": [
+      "ほっこりポテト",
+      "ほっこりポテト",
+      "ほっこりポテト"
+    ],
+    "skill_level": 2,
+    "rp": 2018,
+    "ribbon": 1,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 5592.36,
+      "ingredient_total_per_day": 55.03,
+      "skill_per_day": 1.43
+    }
   }
 ]
