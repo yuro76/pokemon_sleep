@@ -1,0 +1,42 @@
+# claude/ で始まる作業ブランチにプッシュされたら、デフォルトブランチへ自動でマージする。
+# (セッションごとにブランチが分かれるので、マージ漏れで変更が次のセッションに届かないのを防ぐ)
+# 衝突したときはこのジョブが失敗する → 作業ブランチにデフォルトブランチを取り込んで解消し、もう一度プッシュする。
+name: auto-merge to default branch
+
+on:
+  push:
+    branches: ["claude/**"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-merge
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: github.ref_name != github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+      - name: merge
+        env:
+          SRC: ${{ github.ref_name }}
+          DEFAULT: ${{ github.event.repository.default_branch }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin "$SRC"
+          if git merge-base --is-ancestor "origin/$SRC" HEAD; then
+            echo "すでにマージ済み"; exit 0
+          fi
+          if ! git merge --no-edit "origin/$SRC" -m "自動マージ: $SRC → $DEFAULT"; then
+            echo "::error::$SRC を $DEFAULT にマージできませんでした(衝突)。作業ブランチに $DEFAULT を取り込んで解消し、もう一度プッシュしてください。"
+            git merge --abort
+            exit 1
+          fi
+          git push origin "HEAD:$DEFAULT"
