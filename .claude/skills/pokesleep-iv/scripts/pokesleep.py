@@ -14,16 +14,18 @@
   "name": "ピカチュウ",           # 日本語名 (フォルムは "ピカチュウ (ハロウィン)" など)
   "level": 30,
   "nature": "いじっぱり",
-  "subskills": ["おてつだいスピードM", "きのみの数S", ...],  # Lv10,25,50,75,100 の順
+  "subskills": ["おてつだいスピードM", "きのみの数S", ...],  # Lv10,25,50,70,80 の順
   "ingredients": ["とくせんリンゴ", "あったかジンジャー", "とくせんエッグ"],  # Lv1,30,60 枠 (名前 or A/B/C)
   "skill_level": 2,               # 任意
   "rp": 812,                      # 任意: スクショのRP。計算値と照合して読み取りミスを検出
-  "ribbon": 0,                    # 任意: おやすみリボン (0/2/4 段階目換算)
+  "ribbon": 0,                    # 任意: おやすみリボンの段階 (0〜4)
+  "evolution_count": 1,           # 任意: 実際に進化させた回数 (最大所持数+5/回)。省略時は進化段階ぶん
   "nickname": "", "memo": ""      # 任意
 }
 """
 import argparse
 import difflib
+import functools
 import json
 import math
 import sys
@@ -35,9 +37,12 @@ DATA = json.loads((SKILL_DIR / "data" / "pokemon.json").read_text(encoding="utf-
 REPO_ROOT = SKILL_DIR.parent.parent.parent
 RECORDS = REPO_ROOT / "records" / "pokemon.json"
 
-SUBSKILL_UNLOCK = [10, 25, 50, 75, 100]
+SUBSKILL_UNLOCK = [10, 25, 50, 70, 80]
 INGREDIENT_UNLOCK = [1, 30, 60]
-COMPARE_LEVELS = [30, 60]
+EVAL_LEVEL = 80              # 評価・判定の基準レベル (サブスキル5つ・食材3枠すべて解放)
+COMPARE_LEVELS = [60, EVAL_LEVEL]
+AWAKE_HOURS = 16             # 起きている時間 (こまめにタップして所持数は溢れない想定)
+SLEEP_HOURS = 8              # 寝ている時間 (タップできない。所持数が満杯になると食材が取れず、スキル判定も止まる)
 
 # ---------------------------------------------------------------- 名前解決
 
@@ -178,6 +183,7 @@ def parse_individual(raw):
         "skill_level": raw.get("skill_level"),
         "rp": raw.get("rp"),
         "ribbon": raw.get("ribbon", 0),
+        "evolution_count": raw.get("evolution_count"),
         "nickname": raw.get("nickname", ""),
         "memo": raw.get("memo", ""),
     }
@@ -220,60 +226,252 @@ def ribbon_factor(p, ribbon):
     return 1
 
 
-def calc(ind, level=None):
-    """指定レベルでの1日あたりの期待値を計算 (げんき補正・おてつだいボーナス・所持数上限は考慮しない)"""
-    p = POKEMON_BY_EN[ind["name_en"]]
-    level = level or ind["level"]
-    up, down = nature_effect(ind["nature"])
-    active = [SUBSKILL_JA2EN[s] for s, lv in zip(ind["subskills"], SUBSKILL_UNLOCK) if level >= lv]
+RIBBON_CARRY = {0: 0, 1: 1, 2: 3, 3: 6, 4: 8}
+INVENTORY_LEVEL = {"Inventory Up S": 1, "Inventory Up M": 2, "Inventory Up L": 3}
 
-    speed_n = active.count("Helping Speed S") + 2 * active.count("Helping Speed M")
-    ing_n = active.count("Ingredient Finder S") + 2 * active.count("Ingredient Finder M")
-    skill_n = active.count("Skill Trigger S") + 2 * active.count("Skill Trigger M")
 
-    nat_speed = 0.9 if up == "speed" else 1.075 if down == "speed" else 1
-    nat_ing = 1.2 if up == "ing" else 0.8 if down == "ing" else 1
-    nat_skill = 1.2 if up == "skill" else 0.8 if down == "skill" else 1
+def nature_factors(up, down):
+    return (0.9 if up == "speed" else 1.075 if down == "speed" else 1,
+            1.2 if up == "ing" else 0.8 if down == "ing" else 1,
+            1.2 if up == "skill" else 0.8 if down == "skill" else 1)
 
-    freq = p["frequency"] * trunc(
-        (501 - level) / 500 * nat_speed * ribbon_factor(p, ind.get("ribbon", 0)) * (1 - speed_n * 0.07), 4)
-    if level == 10 and p["frequency"] == 2600:
+
+def subskill_key(active_en):
+    """計算に効くサブスキルの要約: (スピード段階, 食材段階, スキル段階, きのみの数S, 所持数段階, おてつだいボーナス)"""
+    return (active_en.count("Helping Speed S") + 2 * active_en.count("Helping Speed M"),
+            active_en.count("Ingredient Finder S") + 2 * active_en.count("Ingredient Finder M"),
+            active_en.count("Skill Trigger S") + 2 * active_en.count("Skill Trigger M"),
+            int("Berry Finding S" in active_en),
+            sum(INVENTORY_LEVEL.get(s, 0) for s in active_en),
+            int("Helping Bonus" in active_en))
+
+
+def base_frequency(p, level, nat_speed, speed_n, ribbon, helping_bonus):
+    sub = speed_n * 0.07
+    if helping_bonus:
+        sub = min(sub + 0.05, 0.35)
+    freq = p["frequency"] * trunc((501 - level) / 500 * nat_speed * ribbon_factor(p, ribbon) * (1 - sub), 4)
+    if level == 10 and p["frequency"] == 2600 and not helping_bonus:
         freq -= 0.1  # ゲーム内の丸め誤差補正 (pokesleep-tool 準拠)
+    return freq
+
+
+@functools.lru_cache(maxsize=None)
+def _night_dp(steps, carry, berry_p, berry_count, ing_usage):
+    """睡眠中(タップなし)の所持数DP。ing_usage = ((確率, 個数), ...) 枠ごと。
+    各ステップ後の累積: 満杯確率, きのみ期待数, 枠ごとの食材期待数 を返す。"""
+    state = [0.0] * carry
+    state[0] = 1.0
+    cum_full, cum_berry, cum_ing = [0.0], [0.0], [tuple(0.0 for _ in ing_usage)]
+    usage = [(berry_p, berry_count, None)] + [(q, c, k) for k, (q, c) in enumerate(ing_usage)]
+    for _ in range(steps):
+        nxt = [0.0] * carry
+        full = berry = 0.0
+        ing = [0.0] * len(ing_usage)
+        for used, prob in enumerate(state):
+            if prob == 0:
+                continue
+            for q, c, k in usage:
+                tp = prob * q
+                if tp == 0:
+                    continue
+                if k is None:
+                    berry += c * tp
+                    add = c
+                else:
+                    add = min(c, carry - used)
+                    ing[k] += add * tp
+                nu = used + add
+                if nu < carry:
+                    nxt[nu] += tp
+                else:
+                    full += tp
+        state = nxt
+        cum_full.append(cum_full[-1] + full)
+        cum_berry.append(cum_berry[-1] + berry)
+        cum_ing.append(tuple(a + b for a, b in zip(cum_ing[-1], ing)))
+    return cum_full, cum_berry, cum_ing
+
+
+def _night_n(n, carry, berry_p, berry_count, ing_usage, skill_rate, skill_stock):
+    cum_full, cum_berry, cum_ing = _night_dp(n, carry, berry_p, berry_count, ing_usage)
+    sneaky = sum(cum_full[i] for i in range(n))  # 満杯後の「つまみぐい」回数
+    # スキル判定は満杯になるまで。ストック上限 (スキル・オールタイプ2回、他1回)
+    p = skill_rate
+    once = twice = 0.0
+
+    def add(prob, k):
+        nonlocal once, twice
+        none_k = (1 - p) ** k
+        if skill_stock >= 2:
+            once_k = k * p * (1 - p) ** (k - 1) if k > 0 else 0
+            once += prob * once_k
+            twice += prob * (1 - none_k - once_k)
+        else:
+            once += prob * (1 - none_k)
+
+    for k in range(1, n):
+        add(cum_full[k] - cum_full[k - 1], k)
+    add(1 - cum_full[n - 1] if n > 0 else 1, n)
+    return {
+        "berries": cum_berry[n] + sneaky * berry_count,
+        "ings": cum_ing[n],
+        "skill": once + 2 * max(0.0, twice),
+        "full_prob": cum_full[n],
+        "sneaky": sneaky,
+    }
+
+
+def night(n, *args):
+    """n (小数可) 回おてつだいした場合の夜の期待値。小数部は線形補間 (pokesleep-tool 準拠)"""
+    lo, hi = math.floor(n), math.ceil(n)
+    a = _night_n(lo, *args)
+    if hi == lo:
+        return a
+    b = _night_n(hi, *args)
+    f = n - lo
+    return {k: (tuple(x + (y - x) * f for x, y in zip(a[k], b[k])) if isinstance(a[k], tuple)
+                else a[k] + (b[k] - a[k]) * f) for k in a}
+
+
+@functools.lru_cache(maxsize=None)
+def compute(name_en, level, nat, sub, ings, ribbon, evo):
+    """1日 (起きている16時間はこまめにタップ / 寝ている8時間はタップなし) の期待値"""
+    p = POKEMON_BY_EN[name_en]
+    nat_speed, nat_ing, nat_skill = nat
+    speed_n, ing_n, skill_n, bfs, inv, hb = sub
+
+    freq = base_frequency(p, level, nat_speed, speed_n, ribbon, hb)
     ing_rate = trunc(p["ingRate"] / 100 * nat_ing * (1 + ing_n * 0.18), 4)
     skill_rate = trunc(p["skillRate"] / 100 * nat_skill * (1 + skill_n * 0.18), 4)
     berry_rate = 1 - ing_rate
-    berry_count = (2 if p["specialty"] in ("Berries", "All") else 1) + (1 if "Berry Finding S" in active else 0)
+    berry_count = (2 if p["specialty"] in ("Berries", "All") else 1) + bfs
+    carry = p["carryLimit"] + 5 * evo + RIBBON_CARRY[min(ribbon, 4)] + 6 * inv
+    skill_stock = 2 if p["specialty"] in ("Skills", "All") else 1
 
-    helps = 86400 / freq
-    bstr = berry_strength(p["type"], level)
-    berries = helps * berry_rate * berry_count
+    slots = [k for k, lv in enumerate(INGREDIENT_UNLOCK) if level >= lv and k < len(ings)]
+    counts = tuple(next(o["count"] for o in p["ingredients"][k] if o["name"] == ings[k]) for k in slots)
 
-    # 食材: 解放済みの枠から等確率で選ばれる
-    ing_en = [ING_JA2EN[i] for i in ind["ingredients"]]
-    unlocked = [i for i, lv in enumerate(INGREDIENT_UNLOCK) if level >= lv and i < len(ing_en)]
+    awake = AWAKE_HOURS * 3600 / freq
+    asleep = SLEEP_HOURS * 3600 / freq
+    nt = night(asleep, carry, berry_rate, berry_count,
+               tuple((ing_rate / len(slots), c) for c in counts), skill_rate, skill_stock)
+
+    berries = awake * berry_rate * berry_count + nt["berries"]
     per_ing = {}
-    for slot in unlocked:
-        cnt = next(o["count"] for o in p["ingredients"][slot] if o["name"] == ing_en[slot])
-        per_ing[ing_en[slot]] = per_ing.get(ing_en[slot], 0) + helps * ing_rate * cnt / len(unlocked)
-    ing_energy = sum(n * DATA["ingredients"][k]["strength"] for k, n in per_ing.items())
-
+    for k, c, night_cnt in zip(slots, counts, nt["ings"]):
+        per_ing[ings[k]] = per_ing.get(ings[k], 0) + awake * ing_rate / len(slots) * c + night_cnt
+    bstr = berry_strength(p["type"], level)
     return {
         "level": level,
         "help_sec": round(freq, 1),
-        "help_sec_raw": freq,
-        "helps_per_day": helps,
+        "helps_per_day": awake + asleep,
         "ing_rate": ing_rate,
         "skill_rate": skill_rate,
         "berry_count_per_help": berry_count,
         "berry_strength": bstr,
+        "carry_limit": carry,
+        "night_helps": asleep,
+        "full_prob": nt["full_prob"],
+        "sneaky": nt["sneaky"],
         "berries_per_day": berries,
         "berry_energy_per_day": berries * bstr,
         "ingredients_per_day": {ing_ja(k): v for k, v in per_ing.items()},
         "ingredient_total_per_day": sum(per_ing.values()),
-        "ingredient_energy_per_day": ing_energy,
-        "skill_per_day": helps * skill_rate,
-        "active_subskills": [DATA["subskills"][s] for s in active],
+        "ingredient_energy_per_day": sum(v * DATA["ingredients"][k]["strength"] for k, v in per_ing.items()),
+        "skill_per_day": awake * skill_rate + nt["skill"],
+        "night_skill": nt["skill"],
     }
+
+
+def evolution_count(ind):
+    """実際に進化させた回数 (進化ごとに最大所持数+5)。未入力なら種族の進化段階ぶん進化させたとみなす"""
+    if ind.get("evolution_count") is not None:
+        return int(ind["evolution_count"])
+    return max(0, POKEMON_BY_EN[ind["name_en"]]["evolutionCount"])
+
+
+def calc(ind, level=None):
+    level = level or ind["level"]
+    up, down = nature_effect(ind["nature"])
+    active = [SUBSKILL_JA2EN[s] for s, lv in zip(ind["subskills"], SUBSKILL_UNLOCK) if level >= lv]
+    r = dict(compute(ind["name_en"], level, nature_factors(up, down), subskill_key(active),
+                     tuple(ING_JA2EN[i] for i in ind["ingredients"]), ind.get("ribbon", 0) or 0,
+                     evolution_count(ind)))
+    r["active_subskills"] = [DATA["subskills"][s] for s in active]
+    return r
+
+
+# ---------------------------------------------------------------- 上位何%
+
+GOLD = ["Berry Finding S", "Dream Shard Bonus", "Energy Recovery Bonus", "Helping Bonus",
+        "Research EXP Bonus", "Skill Level Up M", "Sleep EXP Bonus"]
+BLUE = ["Helping Speed M", "Ingredient Finder M", "Inventory Up L", "Inventory Up M",
+        "Skill Level Up S", "Skill Trigger M"]
+WHITE = ["Helping Speed S", "Ingredient Finder S", "Inventory Up S", "Skill Trigger S"]
+# サブスキル1枠あたりの出現の重み (推定値。金 < 青 < 白 の順に出にくい)。実測値が分かれば調整する
+SUBSKILL_WEIGHT = {**{s: 4.3 for s in GOLD}, **{s: 6.0 for s in BLUE}, **{s: 8.5 for s in WHITE}}
+
+
+@functools.lru_cache(maxsize=None)
+def subskill_distribution():
+    """5つのサブスキル(重複なし・重み付き非復元抽出)の組み合わせ確率を subskill_key ごとに集計"""
+    names = list(SUBSKILL_WEIGHT)
+    w = [SUBSKILL_WEIGHT[n] for n in names]
+    total = sum(w)
+    prob = {0: 1.0}
+    for _ in range(5):
+        nxt = {}
+        for mask, pr in prob.items():
+            rest = total - sum(w[i] for i in range(len(names)) if mask >> i & 1)
+            for i in range(len(names)):
+                if not mask >> i & 1:
+                    m = mask | 1 << i
+                    nxt[m] = nxt.get(m, 0) + pr * w[i] / rest
+        prob = nxt
+    dist = {}
+    for mask, pr in prob.items():
+        key = subskill_key([names[i] for i in range(len(names)) if mask >> i & 1])
+        dist[key] = dist.get(key, 0) + pr
+    return dist
+
+
+def nature_distribution():
+    dist = {}
+    for en in DATA["natures"]:
+        up = next((k for k, v in NATURE_UP.items() if en in v), None)
+        down = next((k for k, v in NATURE_DOWN.items() if en in v), None)
+        key = nature_factors(up, down)
+        dist[key] = dist.get(key, 0) + 1 / len(DATA["natures"])
+    return dist
+
+
+PERCENTILE_METRICS = ["berry_energy_per_day", "ingredient_energy_per_day", "skill_per_day"]
+
+
+def percentile(ind, level=None):
+    """同じポケモンのランダムな個体 (せいかく・サブスキル・食材の並び) の中で上位何%かを返す"""
+    level = level or EVAL_LEVEL
+    p = POKEMON_BY_EN[ind["name_en"]]
+    mine = calc(ind, level)
+    if p["mythical"]:
+        ing_dist = {tuple(ING_JA2EN[i] for i in ind["ingredients"]): 1.0}  # 幻は食材を自分で選ぶ
+    else:
+        combos = [()]
+        for opts in p["ingredients"]:
+            combos = [c + (o["name"],) for c in combos for o in opts]
+        ing_dist = {c: 1 / len(combos) for c in combos}
+    ribbon, evo = ind.get("ribbon", 0) or 0, evolution_count(ind)
+
+    above = {m: 0.0 for m in PERCENTILE_METRICS}
+    for nk, npr in nature_distribution().items():
+        for sk, spr in subskill_distribution().items():
+            for ik, ipr in ing_dist.items():
+                r = compute(p["name_en"], level, nk, sk, ik, ribbon, evo)
+                for m in PERCENTILE_METRICS:
+                    if r[m] >= mine[m] * (1 - 1e-9):
+                        above[m] += npr * spr * ipr
+    return {m: v * 100 for m, v in above.items()}
 
 
 def calc_rp(ind):
@@ -281,7 +479,11 @@ def calc_rp(ind):
     p = POKEMON_BY_EN[ind["name_en"]]
     c = calc(ind)
     level = ind["level"]
-    help5 = 5 * trunc(3600 / c["help_sec_raw"], 2)
+    up, down = nature_effect(ind["nature"])
+    active = [SUBSKILL_JA2EN[s] for s, lv in zip(ind["subskills"], SUBSKILL_UNLOCK) if level >= lv]
+    freq = base_frequency(p, level, nature_factors(up, down)[0], subskill_key(active)[0],
+                          ind.get("ribbon", 0) or 0, False)  # RPにはおてつだいボーナスを含めない
+    help5 = 5 * trunc(3600 / freq, 2)
 
     ing_en = [ING_JA2EN[i] for i in ind["ingredients"]]
     energies = []
@@ -298,7 +500,6 @@ def calc_rp(ind):
     table = next((v for k, v in SKILL_RP_VALUE.items() if p["skill"] in k), SKILL_RP_DEFAULT)
     skill_rp = trunc(help5 * c["skill_rate"] * table[min(slv, len(table)) - 1], 2)
 
-    up, down = nature_effect(ind["nature"])
     bonus = 1.08 if up == "energy" else 0.92 if down == "energy" else 1
     sub_bonus = 1
     for s in c["active_subskills"]:
@@ -327,7 +528,11 @@ def final_form(ind):
     for slot, name in enumerate(ind["ingredients"]):
         idx = [o["name"] for o in p["ingredients"][slot]].index(ING_JA2EN[name])
         ings.append(ing_ja(q["ingredients"][slot][idx]["name"]))
-    return {**ind, "name": q["name_ja"], "name_en": q["name_en"], "ingredients": ings, "ribbon": 0}
+    evo = ind.get("evolution_count")
+    if evo is not None:
+        evo = int(evo) + q["evolutionCount"] - p["evolutionCount"]
+    return {**ind, "name": q["name_ja"], "name_en": q["name_en"], "ingredients": ings, "ribbon": 0,
+            "evolution_count": evo}
 
 
 # ---------------------------------------------------------------- 表示
@@ -378,11 +583,15 @@ def stats_table(ind, levels):
         ("おてつだい回数/日", [fmt(r["helps_per_day"]) for r in rows]),
         ("食材確率", [f"{r['ing_rate'] * 100:.1f}%" for r in rows]),
         ("スキル確率", [f"{r['skill_rate'] * 100:.2f}%" for r in rows]),
+        ("最大所持数", [str(r["carry_limit"]) for r in rows]),
+        ("夜(8h)のおてつだい回数", [fmt(r["night_helps"]) for r in rows]),
+        ("朝までに所持数が満杯になる確率", [f"{r['full_prob'] * 100:.0f}%" for r in rows]),
         ("きのみ個数/日", [fmt(r["berries_per_day"]) for r in rows]),
         ("**きのみエナジー/日**", [fmt(r["berry_energy_per_day"], 0) for r in rows]),
         ("食材個数/日", [fmt(r["ingredient_total_per_day"]) for r in rows]),
         ("**食材エナジー/日**", [fmt(r["ingredient_energy_per_day"], 0) for r in rows]),
         ("**スキル回数/日**", [fmt(r["skill_per_day"], 2) for r in rows]),
+        ("　うち夜のスキル", [fmt(r["night_skill"], 2) for r in rows]),
     ]
     names = []
     for r in rows:
@@ -451,7 +660,7 @@ def compare(ind, records, exclude_id=None):
             lines.append(f"| {label} | " + " | ".join(fmt(v, d) for v in theirs)
                          + f" | {verdict} ({diff:+.1f}%) |")
         out.append("\n".join(lines))
-    out.append("※ 比較は最終進化に換算した値 (→ で表示)。進化先が複数あるポケモンは現在の姿のまま比較します。")
+    out.append(f"※ 判定は Lv{EVAL_LEVEL} の値で比較。最終進化に換算した値 (→ で表示)。進化先が複数あるポケモンは現在の姿のまま比較します。")
     return "\n\n".join(out)
 
 
@@ -498,7 +707,23 @@ def cmd_eval(args):
     if fin["name"] != ind["name"]:
         print(f"\n### 最終進化({fin['name']})に換算した場合\n")
         print(stats_table(fin, sorted({ind["level"], *COMPARE_LEVELS})))
-    print("\n※ おてつだい回数は24時間換算。げんき補正・おてつだいボーナス・所持数上限・夜間のスキルストック上限は含まない相対比較用の値です。")
+    print(f"\n※ 1日 = 起きている{AWAKE_HOURS}時間(こまめにタップ) + 寝ている{SLEEP_HOURS}時間(タップなし)。"
+          "夜は所持数が満杯になると食材が取れなくなり(きのみの「つまみぐい」だけになる)スキル判定も止まる。"
+          "スキルのストックは夜の間 1回まで(スキル・オールタイプは2回まで)。"
+          "おてつだいボーナスは自分の分(5%)のみ。げんきによる速度変化・チームの他メンバーの効果は含まない。")
+    fin_eval = final_form(ind)
+    pct = percentile(fin_eval, EVAL_LEVEL)
+    p = POKEMON_BY_EN[ind["name_en"]]
+    main = {"Berries": ["berry_energy_per_day"], "Ingredients": ["ingredient_energy_per_day"],
+            "Skills": ["skill_per_day"], "All": PERCENTILE_METRICS}[p["specialty"]]
+    evo = f"({fin_eval['name']}に進化した場合)" if fin_eval["name"] != ind["name"] else ""
+    print(f"\n### 個体ランク: Lv{EVAL_LEVEL}{evo}の{POKEMON_BY_EN[fin_eval['name_en']]['name_ja']}の中で\n")
+    print("| 指標 | 上位 | |")
+    print("|---|---:|---|")
+    for m in PERCENTILE_METRICS:
+        mark = "**【とくい】**" if m in main else ""
+        print(f"| {METRIC_JA[m]} | {'**' if mark else ''}{pct[m]:.1f}%{'**' if mark else ''} | {mark} |")
+    print("\n※ せいかく(25種均等)・サブスキル(金<青<白の推定出現率)・食材の並び(均等)をすべての組み合わせで計算した順位。")
     print("\n" + compare(ind, load_records(), exclude_id=args.exclude_id))
 
 
@@ -507,8 +732,8 @@ def cmd_save(args):
     records = load_records()
     new_id = max((r["id"] for r in records), default=0) + 1
     rec = {"id": new_id, "status": args.status, "saved_at": datetime.now().strftime("%Y-%m-%d %H:%M"), **ind}
-    c = calc(ind, 60)
-    rec["snapshot_lv60"] = {k: round(c[k], 2) for k in METRIC_JA}
+    c = calc(ind, EVAL_LEVEL)
+    rec[f"snapshot_lv{EVAL_LEVEL}"] = {k: round(c[k], 2) for k in METRIC_JA}
     records.append(rec)
     save_records(records)
     print(f"記録しました: #{new_id} {ind['name']} Lv{ind['level']} ({args.status})")
@@ -522,10 +747,10 @@ def cmd_list(args):
     if not records:
         print("記録はありません")
         return
-    print("| ID | ポケモン | Lv | 状態 | せいかく | サブスキル | 食材 | きのみE/日@60 | 食材E/日@60 | スキル/日@60 |")
+    print("| ID | ポケモン | Lv | 状態 | せいかく | サブスキル | 食材 | きのみE/日@80 | 食材E/日@80 | スキル/日@80 |")
     print("|---:|---|---:|---|---|---|---|---:|---:|---:|")
     for r in records:
-        c = calc(r, 60)
+        c = calc(r, EVAL_LEVEL)
         print(f"| {r['id']} | {r['name']}{'「' + r['nickname'] + '」' if r.get('nickname') else ''} | "
               f"{r['level']} | {r['status']} | {r['nature'] or '-'} | {' / '.join(r['subskills'])} | "
               f"{' / '.join(r['ingredients'])} | {fmt(c['berry_energy_per_day'], 0)} | "
@@ -539,15 +764,15 @@ def cmd_update(args):
         fail(f"#{args.id} は見つかりません")
     patch = read_input(args.input)
     base = {k: rec.get(k) for k in ("name", "level", "nature", "subskills", "ingredients", "skill_level",
-                                     "rp", "ribbon", "nickname", "memo")}
+                                     "rp", "ribbon", "evolution_count", "nickname", "memo")}
     base.update(patch)
     ind = parse_individual(base)
     rec.update(ind)
     if args.status:
         rec["status"] = args.status
     rec["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M")
-    c = calc(ind, 60)
-    rec["snapshot_lv60"] = {k: round(c[k], 2) for k in METRIC_JA}
+    c = calc(ind, EVAL_LEVEL)
+    rec[f"snapshot_lv{EVAL_LEVEL}"] = {k: round(c[k], 2) for k in METRIC_JA}
     save_records(records)
     print(f"更新しました: #{rec['id']} {rec['name']} Lv{rec['level']} ({rec['status']})")
 

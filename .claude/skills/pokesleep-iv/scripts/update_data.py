@@ -88,6 +88,7 @@ def main():
             "skillRate": p["skillRate"],
             "carryLimit": p["carryLimit"],
             "ancestor": p["ancestor"],
+            "evolutionCount": p["evolutionCount"],
             "evolutionLeft": p["evolutionLeft"],
             "form": p.get("form"),
             "mythical": "mythIng" in p,
