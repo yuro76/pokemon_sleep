@@ -715,5 +715,73 @@
       "ingredient_total_per_day": 6.01,
       "skill_per_day": 2.01
     }
+  },
+  {
+    "id": 23,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 23:28",
+    "name": "ミュウツー",
+    "name_en": "Mewtwo",
+    "level": 25,
+    "nature": "すなお",
+    "subskills": [
+      "スキル確率アップM",
+      "スキルレベルアップS",
+      "おてつだいスピードS",
+      "食材確率アップS",
+      "最大所持数アップS"
+    ],
+    "ingredients": [
+      "ワカクサ大豆",
+      "ワカクサコーン",
+      "ワカクサコーン"
+    ],
+    "skill_level": 2,
+    "rp": 1594,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "ミュウツー△",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 7427.92,
+      "ingredient_total_per_day": 22.58,
+      "skill_per_day": 2.01
+    }
+  },
+  {
+    "id": 24,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:28",
+    "name": "ミュウツー",
+    "name_en": "Mewtwo",
+    "level": 29,
+    "nature": "しんちょう",
+    "subskills": [
+      "最大所持数アップS",
+      "最大所持数アップL",
+      "食材確率アップS",
+      "最大所持数アップM",
+      "スキル確率アップS"
+    ],
+    "ingredients": [
+      "ワカクサ大豆",
+      "ワカクサコーン",
+      "ワカクサ大豆"
+    ],
+    "skill_level": 1,
+    "rp": 1529,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 6743.8,
+      "ingredient_total_per_day": 18.11,
+      "skill_per_day": 2.07
+    }
   }
 ]
