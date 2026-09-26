@@ -94,5 +94,37 @@
       "ingredient_total_per_day": 14.73,
       "skill_per_day": 1.9
     }
+  },
+  {
+    "id": 4,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:16",
+    "name": "ラティアス",
+    "name_en": "Latias",
+    "level": 52,
+    "nature": "てれや",
+    "subskills": [
+      "最大所持数アップL",
+      "おてつだいスピードM",
+      "スキルレベルアップM",
+      "スキル確率アップS",
+      "おてつだいボーナス"
+    ],
+    "ingredients": [
+      "あんみんトマト",
+      "ずっしりカボチャ",
+      "あんみんトマト"
+    ],
+    "skill_level": 6,
+    "rp": 5464,
+    "ribbon": 2,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 9861.44,
+      "ingredient_total_per_day": 10.32,
+      "skill_per_day": 2.55
+    }
   }
 ]
