@@ -286,5 +286,37 @@
       "ingredient_total_per_day": 75.17,
       "skill_per_day": 1.14
     }
+  },
+  {
+    "id": 10,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 14:02",
+    "name": "ゴウカザル",
+    "name_en": "Infernape",
+    "level": 32,
+    "nature": "きまぐれ",
+    "subskills": [
+      "きのみの数S",
+      "スキル確率アップM",
+      "食材確率アップM",
+      "スキル確率アップS",
+      "おてつだいボーナス"
+    ],
+    "ingredients": [
+      "げきからハーブ",
+      "あったかジンジャー",
+      "めざましコーヒー"
+    ],
+    "skill_level": 3,
+    "rp": 2050,
+    "ribbon": 1,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 14671.9,
+      "ingredient_total_per_day": 14.79,
+      "skill_per_day": 2.22
+    }
   }
 ]
