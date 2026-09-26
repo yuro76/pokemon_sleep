@@ -417,5 +417,38 @@
       "ingredient_total_per_day": 26.54,
       "skill_per_day": 1.8
     }
+  },
+  {
+    "id": 14,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 23:02",
+    "name": "ジバコイル",
+    "name_en": "Magnezone",
+    "level": 25,
+    "nature": "おっとり",
+    "subskills": [
+      "睡眠EXPボーナス",
+      "おてつだいボーナス",
+      "スキル確率アップS",
+      "最大所持数アップS",
+      "おてつだいスピードS"
+    ],
+    "ingredients": [
+      "ピュアなオイル",
+      "げきからハーブ",
+      "げきからハーブ"
+    ],
+    "skill_level": 3,
+    "rp": 1478,
+    "ribbon": 0,
+    "mint": false,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 7444.51,
+      "ingredient_total_per_day": 17.56,
+      "skill_per_day": 3.32
+    }
   }
 ]
