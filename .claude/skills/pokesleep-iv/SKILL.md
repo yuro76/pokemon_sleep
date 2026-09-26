@@ -109,8 +109,12 @@ description: ポケモンスリープの個体評価スキル。ポケモン詳�
 ```bash
 git add records/
 git commit -m "記録: #<ID> <ポケモン名> Lv<レベル> (<ステータス>)"
+git fetch origin <デフォルトブランチ> && git merge --no-edit origin/<デフォルトブランチ>   # 自動マージが衝突しないように
 git push -u origin <現在のブランチ>
 ```
+
+プッシュすると GitHub Actions がデフォルトブランチへ自動でマージする(`CLAUDE.md` 参照)。
+ツールや手順を変えたときも同じ。
 
 ## 必須サブスキル
 
