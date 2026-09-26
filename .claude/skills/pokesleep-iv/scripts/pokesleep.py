@@ -721,6 +721,8 @@ def compare(ind, records, exclude_id=None):
             if r["id"] == exclude_id:
                 continue
             q = POKEMON_BY_EN[r["name_en"]]
+            if q["specialty"] != p["specialty"]:  # とくいが同じ個体とだけ比較する
+                continue
             ok = pred(q, r) if key == "ing" else pred(q)
             if ok:
                 matched.append(r)
@@ -757,7 +759,7 @@ def compare(ind, records, exclude_id=None):
             lines.append(f"| {label} | " + " | ".join(fmt(v, d) for v in theirs)
                          + f" | {verdict} ({diff:+.1f}%) |")
         out.append("\n".join(lines))
-    out.append(f"※ 判定は Lv{EVAL_LEVEL} の値で比較。最終進化に換算した値 (→ で表示)。進化先が複数あるポケモンは現在の姿のまま比較します。")
+    out.append(f"※ とくいが同じ({p['specialty_ja']})個体とだけ比較。判定は Lv{EVAL_LEVEL} の値で比較。最終進化に換算した値 (→ で表示)。進化先が複数あるポケモンは現在の姿のまま比較します。")
     return "\n\n".join(out)
 
 

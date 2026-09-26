@@ -190,5 +190,37 @@
       "ingredient_total_per_day": 18.18,
       "skill_per_day": 1.45
     }
+  },
+  {
+    "id": 7,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:52",
+    "name": "ボーマンダ",
+    "name_en": "Salamence",
+    "level": 55,
+    "nature": "さみしがり",
+    "subskills": [
+      "最大所持数アップS",
+      "おてつだいスピードM",
+      "きのみの数S",
+      "スキルレベルアップS",
+      "スキル確率アップS"
+    ],
+    "ingredients": [
+      "ほっこりポテト",
+      "ほっこりポテト",
+      "ほっこりポテト"
+    ],
+    "skill_level": 3,
+    "rp": 4024,
+    "ribbon": 3,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 27360.63,
+      "ingredient_total_per_day": 23.97,
+      "skill_per_day": 1.98
+    }
   }
 ]

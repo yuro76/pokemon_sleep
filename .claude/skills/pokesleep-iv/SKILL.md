@@ -149,6 +149,7 @@ PS require サーナイト --none                               # 必須なし�
   サブスキルの出現率の差は考慮しない(`pokesleep.py` の `SUBSKILL_WEIGHT` で変更可能)
 - **含めていないもの**: げんきによる速度変化、チームの他メンバーのおてつだいボーナス、スキルの効果量、イベント・フィールドボーナス。
   **個体同士の相対比較用の値**であり、実際の獲得量とはずれる。
+- 記録済み個体との比較は**とくいが同じ個体とだけ**行う(きのみタイプならきのみタイプとだけ)。
 - 判定は Lv80 の値で ±1% 以内を「ほぼ同等」。
 - 基礎データの出典: [pokesleep-tool](https://github.com/nitoyon/pokesleep-tool) (MIT)。
   新ポケモンや数値調整に追従するには `python3 .claude/skills/pokesleep-iv/scripts/update_data.py` を実行してコミットする。
