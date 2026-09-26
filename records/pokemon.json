@@ -1191,5 +1191,73 @@
       "ingredient_total_per_day": 18.69,
       "skill_per_day": 2.89
     }
+  },
+  {
+    "id": 37,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:42",
+    "name": "ジジーロン",
+    "name_en": "Drampa",
+    "level": 33,
+    "nature": "ゆうかん",
+    "subskills": [
+      "スキル確率アップM",
+      "最大所持数アップS",
+      "食材確率アップS",
+      "スキルレベルアップS",
+      "スキル確率アップS"
+    ],
+    "ingredients": [
+      "ワカクサ大豆",
+      "つやつやアボカド",
+      "ワカクサ大豆"
+    ],
+    "skill_level": 1,
+    "rp": 1571,
+    "ribbon": 1,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 4809.97,
+      "ingredient_total_per_day": 52.08,
+      "skill_per_day": 2.09
+    }
+  },
+  {
+    "id": 38,
+    "status": "キープ",
+    "saved_at": "2026-09-26 23:42",
+    "name": "ダグトリオ",
+    "name_en": "Dugtrio",
+    "level": 30,
+    "nature": "ゆうかん",
+    "subskills": [
+      "おてつだいスピードM",
+      "食材確率アップM",
+      "スキルレベルアップS",
+      "最大所持数アップL",
+      "最大所持数アップM"
+    ],
+    "ingredients": [
+      "あんみんトマト",
+      "ふといながねぎ",
+      "ふといながねぎ"
+    ],
+    "skill_level": 2,
+    "rp": 1684,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 7568.68,
+      "ingredient_total_per_day": 38.78,
+      "skill_per_day": 0.95
+    }
   }
 ]
