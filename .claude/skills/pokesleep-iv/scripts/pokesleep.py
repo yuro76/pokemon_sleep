@@ -447,8 +447,13 @@ def load_required():
     return out
 
 
+# とくいごとに常に必須とするサブスキル (設定ファイルの内容に追加される)
+SPECIALTY_REQUIRED = {"Berries": (("Berry Finding S",),)}
+
+
 def required_for(name_en):
-    return load_required().get(name_en, ())
+    req = SPECIALTY_REQUIRED.get(POKEMON_BY_EN[name_en]["specialty"], ())
+    return req + tuple(r for r in load_required().get(name_en, ()) if r not in req)
 
 
 def meets_required(subskills_en, required):
@@ -784,6 +789,10 @@ DATA_TYPE_JA = {
 }
 
 
+def p_spec(ind):
+    return POKEMON_BY_EN[final_form(ind)["name_en"]]["specialty"]
+
+
 def cmd_eval(args):
     ind = parse_individual(read_input(args.input))
     print(describe(ind))
@@ -821,7 +830,8 @@ def cmd_eval(args):
     fin_name = final_form(ind)["name"]
     raw_req = json.loads(REQUIRED.read_text(encoding="utf-8")) if REQUIRED.exists() else {}
     if fin_name not in raw_req:
-        print(f"※ 必須サブスキル: {fin_name}は未確認 → ユーザーに必須サブスキルがあるか確認すること")
+        print(f"※ 必須サブスキル: {fin_name}は未確認 → ユーザーに必須サブスキルがあるか確認すること"
+              + ("(きのみタイプなので きのみの数S は設定なしでも必須)" if p_spec(ind) == "Berries" else ""))
     if req:
         print(f"※ 必須サブスキル: {required_ja(req)} → "
               + ("満たしている ✅(満たさない個体より常に上として順位を計算)" if ok
