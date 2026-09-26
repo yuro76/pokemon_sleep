@@ -95,6 +95,7 @@ def main():
             "ingRate": p["ingRate"],
             "skillRate": p["skillRate"],
             "carryLimit": p["carryLimit"],
+            "fp": p.get("fp"),  # 仲良くなるのに必要なゲージ数 (5ゲージ=仲間にしやすい)
             "ancestor": p["ancestor"],
             "evolutionCount": p["evolutionCount"],
             "evolutionLeft": p["evolutionLeft"],

@@ -9,6 +9,7 @@
      や、新規登場ポケモン(厳選完了していないもの)が出るフィールド
   2. イベントで差がつかなければ、食材タイプで厳選完了していないポケモンが多く出るフィールド
      (記録なし=1点、キープのみ=0.2点。そのフィールドでしか出ないポケモンは 記録なし+0.5点・キープ+0.1点)
+     仲良くなるのに5ゲージで済むポケモン (出会う姿の fp=5) を優先し、それ以外は点数を半分にする
      出現ポケモンは進化していない姿 (ゼニガメ等) だけを数える (進化した姿で出会っても厳選の手間は同じではないため)
 
 データ:
@@ -67,6 +68,8 @@ W_UNRECORDED = 1.0    # 食材タイプで記録なし
 W_KEEP = 0.2          # 食材タイプでキープのみ (候補はいるので、記録なしを優先する)
 W_EXCLUSIVE = 0.5     # そのフィールドでしか出ない (記録なし)
 W_EXCLUSIVE_KEEP = 0.1  # そのフィールドでしか出ない (キープのみ)
+EASY_FP = 5           # 仲良くなるのに必要なゲージ数がこれ以下なら「仲間にしやすい」
+W_HARD = 0.5          # 5ゲージより多いポケモンの点数の倍率
 
 
 def fail(msg):
@@ -167,8 +170,10 @@ def field_groups(f, sleep_types):
             if p is None or p["evolutionCount"] > 0:  # 進化していない姿だけを出現対象にする
                 continue
             for q in finals_of(p):
-                g = groups.setdefault(group_key(q), {"final": q, "spawn": set(), "sleep": set()})
+                g = groups.setdefault(group_key(q), {"final": q, "spawn": set(), "sleep": set(), "fp": None})
                 g["spawn"].add(group_label(p))
+                if p.get("fp") is not None:
+                    g["fp"] = p["fp"] if g["fp"] is None else min(g["fp"], p["fp"])
                 g["sleep"].add(st)
     return groups
 
@@ -355,12 +360,16 @@ def main():
                 excl = appear.get(k, 0) == 1 and not f["expert"]
                 if excl:
                     w += W_EXCLUSIVE_KEEP if st == "キープ" else W_EXCLUSIVE
+                fp = gg.get("fp")
+                easy = fp is None or fp <= EASY_FP
+                if not easy:
+                    w *= W_HARD
                 sel_score += w
-                todo.append({"name": group_label(q), "status": st, "exclusive": excl,
+                todo.append({"name": group_label(q), "status": st, "exclusive": excl, "fp": fp, "easy": easy,
                              "spawn": sorted(gg["spawn"]), "sleep": sorted(gg["sleep"]),
                              "ings": "・".join(dict.fromkeys(
                                  DATA["ingredients"][o["name"]]["ja"] for slot in q["ingredients"] for o in slot))})
-            todo.sort(key=lambda t: (t["status"] != "記録なし", not t["exclusive"], t["name"]))
+            todo.sort(key=lambda t: (t["status"] != "記録なし", not t["easy"], not t["exclusive"], t["name"]))
         rows.append({"field": f, "ev_score": ev_score, "merits": merits, "sel_score": sel_score, "todo": todo})
 
     # EX は元のフィールドと同じ出現なので、イベントのメリットがある時だけ並べる
@@ -401,19 +410,20 @@ def main():
     print("判定: " + ("イベントでメリットがあるフィールドを優先" if has_event else
                      "イベントによる差はないので、食材タイプで厳選が終わっていないポケモンが多いフィールドを優先"))
     print()
-    print("| 順位 | フィールド | イベント | 厳選スコア | 未完了の食材タイプ (記録なし/キープ) | そこでしか出ない |")
-    print("|---:|---|---|---:|---|---:|")
+    print("| 順位 | フィールド | イベント | 厳選スコア | 未完了の食材タイプ (記録なし/キープ) | うち5ゲージ | そこでしか出ない |")
+    print("|---:|---|---|---:|---|---:|---:|")
     for i, r in enumerate(rows, 1):
         f = r["field"]
         ev = "<br>".join(r["merits"]) or "-"
         if r["sel_score"] is None:
-            sel, cnt, ex = "-", "出現データなし", "-"
+            sel, cnt, ex, easy = "-", "出現データなし", "-", "-"
         else:
             un = sum(1 for t in r["todo"] if t["status"] == "記録なし")
             kp = len(r["todo"]) - un
             sel, cnt = f"{r['sel_score']:.1f}", f"{len(r['todo'])}種 ({un}/{kp})"
             ex = f"{sum(1 for t in r['todo'] if t['exclusive'])}種"
-        print(f"| {i} | {f['name']} | {ev} | {sel} | {cnt} | {ex} |")
+            easy = f"{sum(1 for t in r['todo'] if t['easy'])}種"
+        print(f"| {i} | {f['name']} | {ev} | {sel} | {cnt} | {easy} | {ex} |")
     print()
 
     print(f"## 上位{args.top}フィールドの狙い目 (食材タイプで厳選が終わっていないポケモン)")
@@ -431,7 +441,8 @@ def main():
         for t in r["todo"]:
             spawn = "、".join(t["spawn"])
             name = t["name"] if spawn == t["name"] else f"{spawn} (→{t['name']})"
-            print(f"- {name} [{t['status']}]" + (" ★ここでしか出ない" if t["exclusive"] else "")
+            gauge = f" {t['fp']}ゲージ" if t["fp"] else ""
+            print(f"- {name} [{t['status']}]{gauge}" + (" ★ここでしか出ない" if t["exclusive"] else "")
                   + f" — {'・'.join(t['sleep'])}"
                   + f" / 食材: {t['ings']}")
         print()
