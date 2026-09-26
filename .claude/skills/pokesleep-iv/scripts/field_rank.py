@@ -14,7 +14,8 @@
   data/events.json  … イベント (update_data.py で更新)
   data/pokemon.json … arrival(実装日) から新規登場ポケモンを判定 (update_data.py で更新)
   data/fields.json  … フィールドごとの出現ポケモン (update_fields.py で更新)
-  records/pokemon.json … 厳選状況 (pokesleep.py save で記録したもの)
+  records/pokemon.json … 厳選状況 (pokesleep.py save で記録したもの)。記録はセッション(ブランチ)ごとに
+                         更新されていくので、git fetch して全ブランチのうち最後に更新された記録を使う
 
 --events には、data/events.json にまだ入っていないイベント(公式のお知らせで見つけたもの)を渡す:
   [{"name": "ハロウィン2026", "start": "2026-10-19T04:00", "end": "2026-10-26T04:00",
@@ -25,13 +26,14 @@
 """
 import argparse
 import json
+import subprocess
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from pokesleep import (DATA, POKEMON_BY_EN, POKEMON_BY_JA, SKILL_DIR, load_records,  # noqa: E402
+from pokesleep import (DATA, POKEMON_BY_EN, POKEMON_BY_JA, RECORDS, REPO_ROOT, SKILL_DIR,  # noqa: E402
                        normalize)
 
 JST = ZoneInfo("Asia/Tokyo")
@@ -116,11 +118,56 @@ def group_label(p):
     return name
 
 
-def selection_status():
+def git(*args):
+    return subprocess.run(["git", *args], cwd=REPO_ROOT, capture_output=True, text=True, timeout=60)
+
+
+def latest_records(fetch=True):
+    """記録はセッション(ブランチ)ごとに更新されていくので、全ブランチの records/pokemon.json のうち
+    最後に更新されたものを使う。コミットしていない手元の変更があればそれも候補にする。
+    戻り値: (記録のリスト, 出どころの説明)"""
+    rel = RECORDS.relative_to(REPO_ROOT).as_posix()
+    if fetch:
+        try:
+            r = git("fetch", "--quiet", "--prune", "origin")
+            if r.returncode != 0:
+                print(f"警告: git fetch に失敗しました。手元にあるブランチだけで探します ({r.stderr.strip()})",
+                      file=sys.stderr)
+        except (OSError, subprocess.TimeoutExpired) as e:
+            print(f"警告: git fetch に失敗しました ({e})", file=sys.stderr)
+
+    cands = []  # (更新時刻, 優先度, 説明, 読み込み関数)
+    try:
+        cur = git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+        refs = git("for-each-ref", "--format=%(refname:short)", "refs/heads", "refs/remotes").stdout.split()
+        for ref in refs:
+            if ref.endswith("/HEAD") or ref == "origin":
+                continue
+            log = git("log", "-1", "--format=%ct%x09%h%x09%s", ref, "--", rel).stdout.strip()
+            if not log:
+                continue
+            ts, h, subj = log.split("\t", 2)
+            prio = 1 if ref in (cur, f"origin/{cur}") else 0
+            cands.append((int(ts), prio, f"{ref} の {h}「{subj}」",
+                          lambda ref=ref: json.loads(git("show", f"{ref}:{rel}").stdout)))
+        dirty = git("status", "--porcelain", "--", rel).stdout.strip()
+    except (OSError, subprocess.TimeoutExpired):
+        dirty = "?"
+    if RECORDS.exists() and (dirty or not cands):
+        cands.append((int(RECORDS.stat().st_mtime), 2, "手元の未コミットの記録",
+                      lambda: json.loads(RECORDS.read_text(encoding="utf-8"))))
+    if not cands:
+        return [], "記録なし"
+    ts, _, desc, load = max(cands, key=lambda c: (c[0], c[1]))
+    when = datetime.fromtimestamp(ts, JST).strftime("%Y-%m-%d %H:%M")
+    return load(), f"{desc} ({when} 更新)"
+
+
+def selection_status(records):
     """厳選の単位ごとの状態 (厳選完了 > キープ)"""
     rank = {"厳選完了": 2, "キープ": 1}
     status = {}
-    for r in load_records():
+    for r in records:
         p = POKEMON_BY_EN.get(r["name_en"])
         if p is None:
             continue
@@ -260,6 +307,7 @@ def main():
     ap.add_argument("--new-days", type=int, default=14,
                     help="週の開始の何日前以降に実装されたポケモンを新規登場とみなすか (既定14)")
     ap.add_argument("--top", type=int, default=3, help="詳細を表示するフィールド数")
+    ap.add_argument("--no-fetch", action="store_true", help="git fetch せずに手元のブランチだけで記録を探す")
     args = ap.parse_args()
 
     now = datetime.now(JST)
@@ -276,7 +324,8 @@ def main():
 
     excluded = {find_field(x)["index"] for x in args.exclude}
     fields = [f for f in FIELDS if f["index"] not in excluded]
-    status = selection_status()
+    records, records_src = latest_records(fetch=not args.no_fetch)
+    status = selection_status(records)
     groups = {f["index"]: field_groups(f, args.sleep_type) for f in fields}
 
     # 通常フィールド(EX 以外)で何か所に出るか
@@ -361,7 +410,10 @@ def main():
     print(f"対象期間: {fmt_period(start, end)}")
     n_done = sum(1 for v in status.values() if v == "厳選完了")
     n_keep = sum(1 for v in status.values() if v == "キープ")
-    print(f"厳選状況: 厳選完了 {n_done}種 / キープのみ {n_keep}種 (records/pokemon.json)")
+    print(f"厳選状況: 記録 {len(records)}件 → 厳選完了 {n_done}種 / キープのみ {n_keep}種")
+    print(f"記録の出どころ: {records_src}")
+    if records:
+        print("記録済み: " + "、".join(f"{r['name']}({r['status']})" for r in records))
     if args.sleep_type:
         print(f"睡眠タイプ: {'・'.join(args.sleep_type)} のみで集計")
     print()
