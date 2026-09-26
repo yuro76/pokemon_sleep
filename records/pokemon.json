@@ -30,5 +30,37 @@
       "ingredient_total_per_day": 17.74,
       "skill_per_day": 3.89
     }
+  },
+  {
+    "id": 2,
+    "status": "厳選完了",
+    "saved_at": "2026-09-26 13:10",
+    "name": "ルカリオ",
+    "name_en": "Lucario",
+    "level": 53,
+    "nature": "しんちょう",
+    "subskills": [
+      "きのみの数S",
+      "スキル確率アップM",
+      "おてつだいスピードM",
+      "食材確率アップM",
+      "スキルレベルアップS"
+    ],
+    "ingredients": [
+      "ピュアなオイル",
+      "ピュアなオイル",
+      "ピュアなオイル"
+    ],
+    "skill_level": 8,
+    "rp": 8235,
+    "ribbon": 3,
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 14765.32,
+      "ingredient_total_per_day": 16.21,
+      "skill_per_day": 3.49
+    }
   }
 ]
