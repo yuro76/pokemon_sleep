@@ -8,6 +8,7 @@
   list    [--name 名前]     記録一覧
   update  <ID> <入力JSON>   記録の一部を上書き (レベルアップ・進化など)
   delete  <ID>              記録を削除
+  require [名前 サブスキル...] 必須サブスキルの設定 (--clear で解除。引数なしで一覧)
 
 入力JSON (ファイルパス or '-' で標準入力):
 {
@@ -36,6 +37,7 @@ SKILL_DIR = Path(__file__).resolve().parent.parent
 DATA = json.loads((SKILL_DIR / "data" / "pokemon.json").read_text(encoding="utf-8"))
 REPO_ROOT = SKILL_DIR.parent.parent.parent
 RECORDS = REPO_ROOT / "records" / "pokemon.json"
+REQUIRED = REPO_ROOT / "records" / "required_subskills.json"  # {"ジュカイン": ["きのみの数S"], ...}
 
 SUBSKILL_UNLOCK = [10, 25, 50, 70, 80]
 INGREDIENT_UNLOCK = [1, 30, 60]
@@ -401,6 +403,39 @@ def calc(ind, level=None):
     return r
 
 
+# ---------------------------------------------------------------- 必須サブスキル
+
+def load_required():
+    """{name_en: ((候補, ...), ...)}。各要素は「どれか1つあればよい」候補 (設定ファイルでは "A|B" と書く)"""
+    if not REQUIRED.exists():
+        return {}
+    raw = json.loads(REQUIRED.read_text(encoding="utf-8"))
+    out = {}
+    for name, reqs in raw.items():
+        en = find_pokemon(name)["name_en"]
+        out[en] = tuple(tuple(resolve(a, SUBSKILL_JA2EN, "サブスキル") for a in r.split("|")) for r in reqs)
+    return out
+
+
+def required_for(name_en):
+    return load_required().get(name_en, ())
+
+
+def meets_required(subskills_en, required):
+    return all(any(a in subskills_en for a in alts) for alts in required)
+
+
+def required_ja(required):
+    return " と ".join("|".join(DATA["subskills"][a] for a in alts) for alts in required)
+
+
+def required_status(ind):
+    """(必須の設定, 満たすか)。最終進化の設定を使う。設定なしなら ((), True)"""
+    fin = final_form(ind)
+    req = required_for(fin["name_en"])
+    return req, meets_required([SUBSKILL_JA2EN[s] for s in ind["subskills"]], req)
+
+
 # ---------------------------------------------------------------- 上位何%
 
 GOLD = ["Berry Finding S", "Dream Shard Bonus", "Energy Recovery Bonus", "Helping Bonus",
@@ -413,8 +448,8 @@ SUBSKILL_WEIGHT = {s: 1.0 for s in GOLD + BLUE + WHITE}
 
 
 @functools.lru_cache(maxsize=None)
-def subskill_distribution():
-    """5つのサブスキル(重複なし・重み付き非復元抽出)の組み合わせ確率を subskill_key ごとに集計"""
+def subskill_distribution(required=()):
+    """5つのサブスキル(重複なし・重み付き非復元抽出)の組み合わせ確率を (subskill_key, 必須を満たすか) ごとに集計"""
     names = list(SUBSKILL_WEIGHT)
     w = [SUBSKILL_WEIGHT[n] for n in names]
     total = sum(w)
@@ -430,7 +465,8 @@ def subskill_distribution():
         prob = nxt
     dist = {}
     for mask, pr in prob.items():
-        key = subskill_key([names[i] for i in range(len(names)) if mask >> i & 1])
+        chosen = [names[i] for i in range(len(names)) if mask >> i & 1]
+        key = (subskill_key(chosen), meets_required(chosen, required))
         dist[key] = dist.get(key, 0) + pr
     return dist
 
@@ -449,10 +485,13 @@ PERCENTILE_METRICS = ["berry_energy_per_day", "ingredient_total_per_day", "skill
 
 
 def percentile(ind, level=None):
-    """同じポケモンのランダムな個体 (せいかく・サブスキル・食材の並び) の中で上位何%かを返す"""
+    """同じポケモンのランダムな個体 (せいかく・サブスキル・食材の並び) の中で上位何%かを返す。
+    必須サブスキルが設定されていれば、それを満たす個体は満たさない個体より常に上とみなす"""
     level = level or EVAL_LEVEL
     p = POKEMON_BY_EN[ind["name_en"]]
     mine = calc(ind, level)
+    required = required_for(ind["name_en"])
+    mine_ok = meets_required([SUBSKILL_JA2EN[s] for s in ind["subskills"]], required)
     if p["mythical"]:
         ing_dist = {tuple(ING_JA2EN[i] for i in ind["ingredients"]): 1.0}  # 幻は食材を自分で選ぶ
     else:
@@ -464,7 +503,13 @@ def percentile(ind, level=None):
 
     above = {m: 0.0 for m in PERCENTILE_METRICS}
     for nk, npr in nature_distribution().items():
-        for sk, spr in subskill_distribution().items():
+        for (sk, ok), spr in subskill_distribution(required).items():
+            if ok and not mine_ok:  # 必須を満たす個体はすべて上
+                for m in PERCENTILE_METRICS:
+                    above[m] += npr * spr
+                continue
+            if not ok and mine_ok:  # 必須を満たさない個体はすべて下
+                continue
             for ik, ipr in ing_dist.items():
                 r = compute(p["name_en"], level, nk, sk, ik, ribbon, evo)
                 for m in PERCENTILE_METRICS:
@@ -644,6 +689,7 @@ def compare(ind, records, exclude_id=None):
         lines = ["| 個体 | " + " | ".join(f"Lv{lv}" for lv in COMPARE_LEVELS) + " | 判定 |",
                  "|---|" + "---:|" * len(COMPARE_LEVELS) + "---|"]
         mine = [calc(final_form(ind), lv)[metric] for lv in COMPARE_LEVELS]
+        mine_req, mine_ok = required_status(ind)
         d = 2 if metric == "skill_per_day" else 0
         evo = f"→{final_form(ind)['name']}" if final_form(ind)["name"] != ind["name"] else ""
         lines.append(f"| **今回**{evo} | " + " | ".join(f"**{fmt(v, d)}**" for v in mine) + " | |")
@@ -652,8 +698,19 @@ def compare(ind, records, exclude_id=None):
             theirs = [calc(fr, lv)[metric] for lv in COMPARE_LEVELS]
             diff = (mine[-1] - theirs[-1]) / theirs[-1] * 100 if theirs[-1] else 0
             verdict = "今回が強い" if diff > 1 else "前の方が強い" if diff < -1 else "ほぼ同等"
+            their_req, their_ok = required_status(r)
+            if fr["name_en"] != final_form(ind)["name_en"]:  # 必須サブスキルは同じ種族同士でだけ考慮
+                mine_ok_here, their_ok = True, True
+            else:
+                mine_ok_here = mine_ok
+            if mine_ok_here and not their_ok:
+                verdict = "今回が強い(前は必須サブスキルなし)"
+            elif their_ok and not mine_ok_here:
+                verdict = "前の方が強い(今回は必須サブスキルなし)"
             evo = f"→{fr['name']}" if fr["name"] != r["name"] else ""
             label = f"#{r['id']} {r['name']}{evo}({r['status']}) {r['nature'] or ''}"
+            if not their_ok:
+                label += " ⚠️必須なし"
             lines.append(f"| {label} | " + " | ".join(fmt(v, d) for v in theirs)
                          + f" | {verdict} ({diff:+.1f}%) |")
         out.append("\n".join(lines))
@@ -721,6 +778,11 @@ def cmd_eval(args):
         mark = "**【とくい】**" if m in main else ""
         print(f"| {METRIC_JA[m]} | {'**' if mark else ''}{pct[m]:.1f}%{'**' if mark else ''} | {mark} |")
     print("\n※ せいかく(25種均等)・サブスキル(全17種が同じ確率)・食材の並び(均等)をすべての組み合わせで計算した順位。")
+    req, ok = required_status(ind)
+    if req:
+        print(f"※ 必須サブスキル: {required_ja(req)} → "
+              + ("満たしている ✅(満たさない個体より常に上として順位を計算)" if ok
+                 else "満たしていない ⚠️(満たす個体すべてより下として順位を計算)"))
     print("\n" + compare(ind, load_records(), exclude_id=args.exclude_id))
 
 
@@ -783,6 +845,29 @@ def cmd_delete(args):
     print(f"削除しました: #{args.id}")
 
 
+def cmd_require(args):
+    raw = json.loads(REQUIRED.read_text(encoding="utf-8")) if REQUIRED.exists() else {}
+    if not args.name:
+        if not raw:
+            print("必須サブスキルの設定はありません")
+        for name, reqs in raw.items():
+            print(f"- {name}: {' と '.join(reqs)}")
+        return
+    p = find_pokemon(args.name)
+    if args.clear:
+        raw.pop(p["name_ja"], None)
+        print(f"{p['name_ja']}の必須サブスキルを解除しました")
+    else:
+        if not args.subskills:
+            fail("サブスキルを指定してください (どれか1つでよい場合は \"A|B\")")
+        reqs = ["|".join(DATA["subskills"][resolve(a, SUBSKILL_JA2EN, "サブスキル")] for a in r.split("|"))
+                for r in args.subskills]
+        raw[p["name_ja"]] = reqs
+        print(f"{p['name_ja']}の必須サブスキル: {' と '.join(reqs)}")
+    REQUIRED.parent.mkdir(parents=True, exist_ok=True)
+    REQUIRED.write_text(json.dumps(raw, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def main():
     ap = argparse.ArgumentParser(description="ポケモンスリープ 個体評価・記録ツール")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -795,6 +880,8 @@ def main():
     s = sub.add_parser("update"); s.add_argument("id", type=int); s.add_argument("input")
     s.add_argument("--status", choices=["厳選完了", "キープ"]); s.set_defaults(f=cmd_update)
     s = sub.add_parser("delete"); s.add_argument("id", type=int); s.set_defaults(f=cmd_delete)
+    s = sub.add_parser("require"); s.add_argument("name", nargs="?"); s.add_argument("subskills", nargs="*")
+    s.add_argument("--clear", action="store_true"); s.set_defaults(f=cmd_require)
     args = ap.parse_args()
     args.f(args)
 
