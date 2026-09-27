@@ -188,11 +188,11 @@ def typical_amount(p, ing):
     return r["ingredients_per_day"].get(ing, 0)
 
 
-def best_done_amounts(records):
-    """{食材: (個数/日 Lv80, ラベル)} 厳選完了の個体がその食材を一番多く集める量 (最終進化・銀タネ前提)"""
+def best_amounts(records, status):
+    """{食材: (個数/日 Lv80, ラベル)} そのステータスの個体がその食材を一番多く集める量 (最終進化・銀タネ前提)"""
     best = {}
     for r in records:
-        if r.get("status") != "厳選完了":
+        if r.get("status") != status:
             continue
         try:
             fr = final_form(r)
@@ -365,16 +365,21 @@ def main():
     targets = ingredient_targets()
     rank = {"厳選完了": 2, "キープ": 1}
     ing_status, ing_fields, ing_cover = {}, {}, {}
-    done_amounts = best_done_amounts(records)
+    done_amounts, keep_amounts = best_amounts(records, "厳選完了"), best_amounts(records, "キープ")
     for ing, tg in targets.items():
         sts = [status.get(group_key(q), "記録なし") for _, _, q in tg]
         ing_status[ing] = max(sts, key=lambda x: rank.get(x, 0))
-        if ing_status[ing] != "厳選完了" and ing in done_amounts:
-            have, who = done_amounts[ing]
-            typical = typical_amount(tg[0][2], ing)
-            if have >= typical:
-                ing_status[ing] = "代わりあり"
-                ing_cover[ing] = f"{who} が1日{have:.1f}個 (並の{tg[0][2]['name_ja']} {typical:.1f}個)"
+        if ing_status[ing] == "厳選完了":
+            continue
+        typical = typical_amount(tg[0][2], ing)
+        # 厳選対象ではないが、記録済みの個体が並の厳選対象くらい集められていれば、その個体で代わりになる
+        for amounts, label in ((done_amounts, "代わりあり"), (keep_amounts, "キープ")):
+            if ing in amounts and amounts[ing][0] >= typical:
+                have, who = amounts[ing]
+                if label == "代わりあり" or ing_status[ing] == "記録なし":
+                    ing_status[ing] = label
+                    ing_cover[ing] = f"{who} が1日{have:.1f}個 (並の{tg[0][2]['name_ja']} {typical:.1f}個)"
+                break
         keys = {group_key(q) for _, _, q in tg}
         ing_fields[ing] = sum(1 for f in fields if not f["expert"] and groups[f["index"]]
                               and keys & set(groups[f["index"]]))
