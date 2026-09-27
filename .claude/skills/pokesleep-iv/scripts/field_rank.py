@@ -10,7 +10,8 @@
   2. イベントで差がつかなければ、厳選が終わっていない食材を集めるのに向いたポケモンが多く出るフィールド
      食材ごとに、その食材を一番多く集める食材タイプ (Lv60・補正なし・サブスキルなし・その食材が最も多い並び)
      と、その 90% 以上集めるものだけを厳選対象とする (例: オイルならレントラー・ドクロッグ・クチート…)
-     食材の状態: 厳選対象のどれかが厳選完了 → 完了 / キープあり → キープ / なし → 記録なし
+     食材の状態: 厳選対象のどれかが厳選完了 → 完了 / キープあり → キープ /
+       厳選対象ではないが、厳選完了の個体がその食材を並の厳選対象くらい集めている → 代わりあり / なし → 記録なし
      (記録なし=1点、キープ=0.2点。その食材の厳選対象がそのフィールドでしか出ない場合 +0.5点・+0.1点。
       フィールドで出会える対象のうち一番多く集めるものの割合 (一番=1.0) を掛ける)
      仲良くなるのに5ゲージで済むポケモン (出会う姿の fp=5) を優先し、それ以外は点数を半分にする
@@ -40,7 +41,7 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import records_sync  # noqa: E402
 from pokesleep import (DATA, POKEMON_BY_EN, POKEMON_BY_JA, RECORDS, REPO_ROOT, SKILL_DIR,  # noqa: E402
-                       compute, ing_ja, load_records, normalize, subskill_key)
+                       calc, compute, final_form, ing_ja, load_records, normalize, subskill_key)
 
 JST = ZoneInfo("Asia/Tokyo")
 FIELDS = json.loads((SKILL_DIR / "data" / "fields.json").read_text(encoding="utf-8"))["fields"]
@@ -72,6 +73,7 @@ W_UNRECORDED = 1.0    # 食材タイプで記録なし
 W_KEEP = 0.2          # 食材タイプでキープのみ (候補はいるので、記録なしを優先する)
 W_EXCLUSIVE = 0.5     # そのフィールドでしか出ない (記録なし)
 W_EXCLUSIVE_KEEP = 0.1  # そのフィールドでしか出ない (キープのみ)
+W_COVERED = 0.2       # 厳選対象ではない厳選完了の個体で、並の厳選対象くらい集められている食材 (例: カボチャのミカルゲ)
 EASY_FP = 5           # 仲良くなるのに必要なゲージ数がこれ以下なら「仲間にしやすい」
 W_HARD = 0.5          # 5ゲージより多いポケモンの点数の倍率
 TARGET_RATIO = 0.9    # その食材を一番多く集めるポケモンの何割以上を厳選対象とするか
@@ -176,6 +178,31 @@ def ingredient_targets():
         out[ing] = sorted(((v / top, v, p) for v, p in d.values() if top and v >= top * TARGET_RATIO),
                           key=lambda t: -t[1])
     return out
+
+
+def typical_amount(p, ing):
+    """並の個体の目安: その食材が最も多い並び・補正なし・サブスキルなしの Lv80 の個数/日"""
+    ings = tuple(next((o["name"] for o in slot if ing_ja(o["name"]) == ing), slot[0]["name"])
+                 for slot in p["ingredients"])
+    r = compute(p["name_en"], 80, (1, 1, 1), subskill_key([]), ings, 0, max(0, p["evolutionCount"]))
+    return r["ingredients_per_day"].get(ing, 0)
+
+
+def best_done_amounts(records):
+    """{食材: (個数/日 Lv80, ラベル)} 厳選完了の個体がその食材を一番多く集める量 (最終進化・銀タネ前提)"""
+    best = {}
+    for r in records:
+        if r.get("status") != "厳選完了":
+            continue
+        try:
+            fr = final_form(r)
+            c = calc(fr, 80)
+        except Exception:
+            continue
+        for ing, v in c["ingredients_per_day"].items():
+            if v > best.get(ing, (0, ""))[0]:
+                best[ing] = (v, f"#{r['id']} {fr['name']}")
+    return best
 
 
 # ---------------------------------------------------------------- フィールド
@@ -337,10 +364,17 @@ def main():
     # 食材ごとの厳選対象と、その状態・出会えるフィールド数
     targets = ingredient_targets()
     rank = {"厳選完了": 2, "キープ": 1}
-    ing_status, ing_fields = {}, {}
+    ing_status, ing_fields, ing_cover = {}, {}, {}
+    done_amounts = best_done_amounts(records)
     for ing, tg in targets.items():
         sts = [status.get(group_key(q), "記録なし") for _, _, q in tg]
         ing_status[ing] = max(sts, key=lambda x: rank.get(x, 0))
+        if ing_status[ing] != "厳選完了" and ing in done_amounts:
+            have, who = done_amounts[ing]
+            typical = typical_amount(tg[0][2], ing)
+            if have >= typical:
+                ing_status[ing] = "代わりあり"
+                ing_cover[ing] = f"{who} が1日{have:.1f}個 (並の{tg[0][2]['name_ja']} {typical:.1f}個)"
         keys = {group_key(q) for _, _, q in tg}
         ing_fields[ing] = sum(1 for f in fields if not f["expert"] and groups[f["index"]]
                               and keys & set(groups[f["index"]]))
@@ -404,12 +438,13 @@ def main():
                     return t[0] * (1 if fp is None or fp <= EASY_FP else W_HARD)
                 here.sort(key=lambda t: -value(t))
                 best = here[0]
-                w = (W_KEEP if st == "キープ" else W_UNRECORDED)
+                w = {"キープ": W_KEEP, "代わりあり": W_COVERED}.get(st, W_UNRECORDED)
                 excl = ing_fields.get(ing, 0) == 1 and not f["expert"]
                 if excl:
-                    w += W_EXCLUSIVE_KEEP if st == "キープ" else W_EXCLUSIVE
+                    w += W_EXCLUSIVE if st == "記録なし" else W_EXCLUSIVE_KEEP
                 sel_score += w * value(best)
                 todo.append({"ing": ing, "status": st, "exclusive": excl, "value": value(best),
+                             "cover": ing_cover.get(ing),
                              "easy": any(value(t) >= t[0] for t in here[:1]),
                              "cands": [{"name": group_label(q), "status": status.get(group_key(q), "記録なし"),
                                         "spawn": sorted(gg["spawn"]), "sleep": sorted(gg["sleep"]),
@@ -456,7 +491,7 @@ def main():
     print("判定: " + ("イベントでメリットがあるフィールドを優先" if has_event else
                      "イベントによる差はないので、厳選が終わっていない食材を、それを一番多く集めるポケモンで集められるフィールドを優先"))
     print()
-    print("| 順位 | フィールド | イベント | 厳選スコア | 集められる未完了の食材 (記録なし/キープ) | そこでしか集まらない |")
+    print("| 順位 | フィールド | イベント | 厳選スコア | 集められる未完了の食材 (記録なし/キープ・代わりあり) | そこでしか集まらない |")
     print("|---:|---|---|---:|---|---:|")
     for i, r in enumerate(rows, 1):
         f = r["field"]
@@ -484,7 +519,8 @@ def main():
             print("- ここで集められる食材はすべて厳選完了")
             continue
         for t in r["todo"]:
-            print(f"- **{t['ing']}** [{t['status']}]" + (" ★ここでしか集まらない" if t["exclusive"] else ""))
+            print(f"- **{t['ing']}** [{t['status']}]" + (" ★ここでしか集まらない" if t["exclusive"] else "")
+                  + (f" — {t['cover']}" if t.get("cover") else ""))
             for c in t["cands"]:
                 spawn = "、".join(c["spawn"])
                 name = c["name"] if spawn == c["name"] else f"{spawn} (→{c['name']})"
