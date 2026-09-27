@@ -10,8 +10,9 @@
   2. イベントで差がつかなければ、厳選が終わっていない食材を集めるのに向いたポケモンが多く出るフィールド
      食材ごとに、その食材を一番多く集める食材タイプ (Lv60・補正なし・サブスキルなし・その食材が最も多い並び)
      と、その 90% 以上集めるものだけを厳選対象とする (例: オイルならレントラー・ドクロッグ・クチート…)
-     食材の状態: 厳選対象のどれかが厳選完了 → 完了 / キープあり → キープ /
-       厳選対象ではないが、厳選完了の個体がその食材を並の厳選対象くらい集めている → 代わりあり / なし → 記録なし
+     食材の状態は、実際に記録した個体がその食材を何個集めるか (Lv80・最終進化・銀タネ前提) で決める。
+     並の厳選対象 (その食材が最も多い並び・補正なし・サブスキルなしの Lv80) 以上集める個体が
+       厳選完了で厳選対象の種族 → 完了 / 厳選完了で厳選対象外 → 代わりあり / キープ → キープ / いない → 記録なし
      (記録なし=1点、キープ=0.2点。その食材の厳選対象がそのフィールドでしか出ない場合 +0.5点・+0.1点。
       フィールドで出会える対象のうち一番多く集めるものの割合 (一番=1.0) を掛ける)
      仲良くなるのに5ゲージで済むポケモン (出会う姿の fp=5) を優先し、それ以外は点数を半分にする
@@ -188,21 +189,16 @@ def typical_amount(p, ing):
     return r["ingredients_per_day"].get(ing, 0)
 
 
-def best_amounts(records, status):
-    """{食材: (個数/日 Lv80, ラベル)} そのステータスの個体がその食材を一番多く集める量 (最終進化・銀タネ前提)"""
-    best = {}
+def record_amounts(records):
+    """[(記録, 最終進化の個体, {食材: 個数/日 Lv80})] 実際に記録した個体が集める量 (銀タネ前提)"""
+    out = []
     for r in records:
-        if r.get("status") != status:
-            continue
         try:
             fr = final_form(r)
-            c = calc(fr, 80)
+            out.append((r, fr, calc(fr, 80)["ingredients_per_day"]))
         except Exception:
             continue
-        for ing, v in c["ingredients_per_day"].items():
-            if v > best.get(ing, (0, ""))[0]:
-                best[ing] = (v, f"#{r['id']} {fr['name']}")
-    return best
+    return out
 
 
 # ---------------------------------------------------------------- フィールド
@@ -365,21 +361,27 @@ def main():
     targets = ingredient_targets()
     rank = {"厳選完了": 2, "キープ": 1}
     ing_status, ing_fields, ing_cover = {}, {}, {}
-    done_amounts, keep_amounts = best_amounts(records, "厳選完了"), best_amounts(records, "キープ")
+    amounts = record_amounts(records)
+    order = {"完了": 3, "代わりあり": 2, "キープ": 1}
     for ing, tg in targets.items():
-        sts = [status.get(group_key(q), "記録なし") for _, _, q in tg]
-        ing_status[ing] = max(sts, key=lambda x: rank.get(x, 0))
-        if ing_status[ing] == "厳選完了":
-            continue
         typical = typical_amount(tg[0][2], ing)
-        # 厳選対象ではないが、記録済みの個体が並の厳選対象くらい集められていれば、その個体で代わりになる
-        for amounts, label in ((done_amounts, "代わりあり"), (keep_amounts, "キープ")):
-            if ing in amounts and amounts[ing][0] >= typical:
-                have, who = amounts[ing]
-                if label == "代わりあり" or ing_status[ing] == "記録なし":
-                    ing_status[ing] = label
-                    ing_cover[ing] = f"{who} が1日{have:.1f}個 (並の{tg[0][2]['name_ja']} {typical:.1f}個)"
-                break
+        target_keys = {group_key(q) for _, _, q in tg}
+        best = ("記録なし", None)
+        for r, fr, per in amounts:
+            have = per.get(ing, 0)
+            if have < typical:  # 実際の個体がその食材を並の厳選対象ほど集めない (並びが違う等)
+                continue
+            if r.get("status") == "厳選完了":
+                st = "完了" if group_key(POKEMON_BY_EN[fr["name_en"]]) in target_keys else "代わりあり"
+            elif r.get("status") == "キープ":
+                st = "キープ"
+            else:
+                continue
+            if order[st] > order.get(best[0], 0) or (st == best[0] and have > best[1][0]):
+                best = (st, (have, f"#{r['id']} {fr['name']}"))
+        ing_status[ing] = "厳選完了" if best[0] == "完了" else best[0]
+        if best[1]:
+            ing_cover[ing] = f"{best[1][1]} が1日{best[1][0]:.1f}個 (並の{tg[0][2]['name_ja']} {typical:.1f}個)"
         keys = {group_key(q) for _, _, q in tg}
         ing_fields[ing] = sum(1 for f in fields if not f["expert"] and groups[f["index"]]
                               and keys & set(groups[f["index"]]))
