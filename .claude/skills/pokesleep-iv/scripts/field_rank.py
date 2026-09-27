@@ -7,8 +7,12 @@
 優先順位:
   1. イベントでメリットがあるフィールド (イベント対象フィールド・好きなきのみの固定・対象タイプが好きなきのみ)
      や、新規登場ポケモン(厳選完了していないもの)が出るフィールド
-  2. イベントで差がつかなければ、食材タイプで厳選完了していないポケモンが多く出るフィールド
-     (記録なし=1点、キープのみ=0.2点。そのフィールドでしか出ないポケモンは 記録なし+0.5点・キープ+0.1点)
+  2. イベントで差がつかなければ、厳選が終わっていない食材を集めるのに向いたポケモンが多く出るフィールド
+     食材ごとに、その食材を一番多く集める食材タイプ (Lv60・補正なし・サブスキルなし・その食材が最も多い並び)
+     と、その 90% 以上集めるものだけを厳選対象とする (例: オイルならレントラー・ドクロッグ・クチート…)
+     食材の状態: 厳選対象のどれかが厳選完了 → 完了 / キープあり → キープ / なし → 記録なし
+     (記録なし=1点、キープ=0.2点。その食材の厳選対象がそのフィールドでしか出ない場合 +0.5点・+0.1点。
+      フィールドで出会える対象のうち一番多く集めるものの割合 (一番=1.0) を掛ける)
      仲良くなるのに5ゲージで済むポケモン (出会う姿の fp=5) を優先し、それ以外は点数を半分にする
      出現ポケモンは進化していない姿 (ゼニガメ等) だけを数える (進化した姿で出会っても厳選の手間は同じではないため)
 
@@ -36,7 +40,7 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import records_sync  # noqa: E402
 from pokesleep import (DATA, POKEMON_BY_EN, POKEMON_BY_JA, RECORDS, REPO_ROOT, SKILL_DIR,  # noqa: E402
-                       load_records, normalize)
+                       compute, ing_ja, load_records, normalize, subskill_key)
 
 JST = ZoneInfo("Asia/Tokyo")
 FIELDS = json.loads((SKILL_DIR / "data" / "fields.json").read_text(encoding="utf-8"))["fields"]
@@ -70,6 +74,7 @@ W_EXCLUSIVE = 0.5     # そのフィールドでしか出ない (記録なし)
 W_EXCLUSIVE_KEEP = 0.1  # そのフィールドでしか出ない (キープのみ)
 EASY_FP = 5           # 仲良くなるのに必要なゲージ数がこれ以下なら「仲間にしやすい」
 W_HARD = 0.5          # 5ゲージより多いポケモンの点数の倍率
+TARGET_RATIO = 0.9    # その食材を一番多く集めるポケモンの何割以上を厳選対象とするか
 
 
 def fail(msg):
@@ -146,6 +151,31 @@ def selection_status(records):
         if rank.get(r["status"], 0) > rank.get(status.get(k), 0):
             status[k] = r["status"]
     return status
+
+
+# ---------------------------------------------------------------- 食材ごとの厳選対象
+
+def ingredient_targets():
+    """{食材(日本語): [(割合, 個数/日, 最終進化), ...]} 一番多く集めるものの TARGET_RATIO 以上だけ、多い順"""
+    amounts = {}
+    for p in DATA["pokemon"]:
+        if p["specialty"] != "Ingredients" or p["evolutionLeft"] != 0 or p["mythical"]:
+            continue
+        for name in {o["name"] for slot in p["ingredients"] for o in slot}:
+            ings = tuple(next((o["name"] for o in slot if o["name"] == name), slot[0]["name"])
+                         for slot in p["ingredients"])
+            r = compute(p["name_en"], 60, (1, 1, 1), subskill_key([]), ings, 0, max(0, p["evolutionCount"]))
+            v = r["ingredients_per_day"].get(ing_ja(name), 0)
+            amounts.setdefault(ing_ja(name), {})
+            k = group_key(p)
+            if v > amounts[ing_ja(name)].get(k, (0, None))[0]:
+                amounts[ing_ja(name)][k] = (v, p)
+    out = {}
+    for ing, d in amounts.items():
+        top = max(v for v, _ in d.values())
+        out[ing] = sorted(((v / top, v, p) for v, p in d.values() if top and v >= top * TARGET_RATIO),
+                          key=lambda t: -t[1])
+    return out
 
 
 # ---------------------------------------------------------------- フィールド
@@ -304,6 +334,17 @@ def main():
             for k in groups[f["index"]]:
                 appear[k] = appear.get(k, 0) + 1
 
+    # 食材ごとの厳選対象と、その状態・出会えるフィールド数
+    targets = ingredient_targets()
+    rank = {"厳選完了": 2, "キープ": 1}
+    ing_status, ing_fields = {}, {}
+    for ing, tg in targets.items():
+        sts = [status.get(group_key(q), "記録なし") for _, _, q in tg]
+        ing_status[ing] = max(sts, key=lambda x: rank.get(x, 0))
+        keys = {group_key(q) for _, _, q in tg}
+        ing_fields[ing] = sum(1 for f in fields if not f["expert"] and groups[f["index"]]
+                              and keys & set(groups[f["index"]]))
+
     events = collect_events(start, end, extra)
     gsd = drowsy_days(start, end)
 
@@ -351,25 +392,30 @@ def main():
         todo, sel_score = [], None
         if g:
             sel_score = 0.0
-            for k, gg in g.items():
-                q = gg["final"]
-                if q["specialty"] != "Ingredients" or status.get(k) == "厳選完了":
+            for ing, tg in targets.items():
+                st = ing_status[ing]
+                if st == "厳選完了":
                     continue
-                st = status.get(k, "記録なし")
-                w = W_KEEP if st == "キープ" else W_UNRECORDED
-                excl = appear.get(k, 0) == 1 and not f["expert"]
+                here = [(ratio, v, q, g[group_key(q)]) for ratio, v, q in tg if group_key(q) in g]
+                if not here:
+                    continue
+                def value(t):
+                    fp = t[3].get("fp")
+                    return t[0] * (1 if fp is None or fp <= EASY_FP else W_HARD)
+                here.sort(key=lambda t: -value(t))
+                best = here[0]
+                w = (W_KEEP if st == "キープ" else W_UNRECORDED)
+                excl = ing_fields.get(ing, 0) == 1 and not f["expert"]
                 if excl:
                     w += W_EXCLUSIVE_KEEP if st == "キープ" else W_EXCLUSIVE
-                fp = gg.get("fp")
-                easy = fp is None or fp <= EASY_FP
-                if not easy:
-                    w *= W_HARD
-                sel_score += w
-                todo.append({"name": group_label(q), "status": st, "exclusive": excl, "fp": fp, "easy": easy,
-                             "spawn": sorted(gg["spawn"]), "sleep": sorted(gg["sleep"]),
-                             "ings": "・".join(dict.fromkeys(
-                                 DATA["ingredients"][o["name"]]["ja"] for slot in q["ingredients"] for o in slot))})
-            todo.sort(key=lambda t: (t["status"] != "記録なし", not t["easy"], not t["exclusive"], t["name"]))
+                sel_score += w * value(best)
+                todo.append({"ing": ing, "status": st, "exclusive": excl, "value": value(best),
+                             "easy": any(value(t) >= t[0] for t in here[:1]),
+                             "cands": [{"name": group_label(q), "status": status.get(group_key(q), "記録なし"),
+                                        "spawn": sorted(gg["spawn"]), "sleep": sorted(gg["sleep"]),
+                                        "fp": gg.get("fp"), "amount": v}
+                                       for ratio, v, q, gg in here]})
+            todo.sort(key=lambda t: (t["status"] != "記録なし", not t["exclusive"], -t["value"], t["ing"]))
         rows.append({"field": f, "ev_score": ev_score, "merits": merits, "sel_score": sel_score, "todo": todo})
 
     # EX は元のフィールドと同じ出現なので、イベントのメリットがある時だけ並べる
@@ -408,25 +454,24 @@ def main():
 
     print("## ランキング")
     print("判定: " + ("イベントでメリットがあるフィールドを優先" if has_event else
-                     "イベントによる差はないので、食材タイプで厳選が終わっていないポケモンが多いフィールドを優先"))
+                     "イベントによる差はないので、厳選が終わっていない食材を、それを一番多く集めるポケモンで集められるフィールドを優先"))
     print()
-    print("| 順位 | フィールド | イベント | 厳選スコア | 未完了の食材タイプ (記録なし/キープ) | うち5ゲージ | そこでしか出ない |")
-    print("|---:|---|---|---:|---|---:|---:|")
+    print("| 順位 | フィールド | イベント | 厳選スコア | 集められる未完了の食材 (記録なし/キープ) | そこでしか集まらない |")
+    print("|---:|---|---|---:|---|---:|")
     for i, r in enumerate(rows, 1):
         f = r["field"]
         ev = "<br>".join(r["merits"]) or "-"
         if r["sel_score"] is None:
-            sel, cnt, ex, easy = "-", "出現データなし", "-", "-"
+            sel, cnt, ex = "-", "出現データなし", "-"
         else:
             un = sum(1 for t in r["todo"] if t["status"] == "記録なし")
             kp = len(r["todo"]) - un
             sel, cnt = f"{r['sel_score']:.1f}", f"{len(r['todo'])}種 ({un}/{kp})"
             ex = f"{sum(1 for t in r['todo'] if t['exclusive'])}種"
-            easy = f"{sum(1 for t in r['todo'] if t['easy'])}種"
-        print(f"| {i} | {f['name']} | {ev} | {sel} | {cnt} | {easy} | {ex} |")
+        print(f"| {i} | {f['name']} | {ev} | {sel} | {cnt} | {ex} |")
     print()
 
-    print(f"## 上位{args.top}フィールドの狙い目 (食材タイプで厳選が終わっていないポケモン)")
+    print(f"## 上位{args.top}フィールドの狙い目 (厳選が終わっていない食材と、それを一番多く集めるポケモン)")
     for r in rows[:args.top]:
         f = r["field"]
         print(f"### {f['name']}")
@@ -436,15 +481,15 @@ def main():
             print("- 出現ポケモンのデータがありません (data/fields.json)")
             continue
         if not r["todo"]:
-            print("- 食材タイプはすべて厳選完了")
+            print("- ここで集められる食材はすべて厳選完了")
             continue
         for t in r["todo"]:
-            spawn = "、".join(t["spawn"])
-            name = t["name"] if spawn == t["name"] else f"{spawn} (→{t['name']})"
-            gauge = f" {t['fp']}ゲージ" if t["fp"] else ""
-            print(f"- {name} [{t['status']}]{gauge}" + (" ★ここでしか出ない" if t["exclusive"] else "")
-                  + f" — {'・'.join(t['sleep'])}"
-                  + f" / 食材: {t['ings']}")
+            print(f"- **{t['ing']}** [{t['status']}]" + (" ★ここでしか集まらない" if t["exclusive"] else ""))
+            for c in t["cands"]:
+                spawn = "、".join(c["spawn"])
+                name = c["name"] if spawn == c["name"] else f"{spawn} (→{c['name']})"
+                gauge = f" {c['fp']}ゲージ" if c["fp"] else ""
+                print(f"  - {name}{gauge} [{c['status']}] 1日{c['amount']:.1f}個 — {'・'.join(c['sleep'])}")
         print()
 
     missing = [f["name"] for f in fields if encounters(f) is None and not f["expert"]]
