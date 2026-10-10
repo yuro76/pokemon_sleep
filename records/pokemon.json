@@ -1395,5 +1395,39 @@
       "ingredient_total_per_day": 55.78,
       "skill_per_day": 0.33
     }
+  },
+  {
+    "id": 43,
+    "status": "厳選完了",
+    "saved_at": "2026-10-10 22:49",
+    "name": "フシギダネ",
+    "name_en": "Bulbasaur",
+    "level": 15,
+    "nature": "れいせい",
+    "subskills": [
+      "リサーチEXPボーナス",
+      "ゆめのかけらボーナス",
+      "おてつだいボーナス",
+      "食材確率アップS",
+      "スキル確率アップS"
+    ],
+    "ingredients": [
+      "あまいミツ",
+      "あまいミツ",
+      "あまいミツ"
+    ],
+    "skill_level": 1,
+    "rp": 588,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 3290.61,
+      "ingredient_total_per_day": 40.04,
+      "skill_per_day": 0.54
+    }
   }
 ]
