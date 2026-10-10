@@ -1,6 +1,6 @@
 {
  "source": "https://github.com/nitoyon/pokesleep-tool (MIT License)",
- "updated": "2026-09-26",
+ "updated": "2026-10-10",
  "areas": [
   "ワカクサ本島",
   "シアンの砂浜",
@@ -13,6 +13,22 @@
   "シアンの砂浜 EX"
  ],
  "bonus": [
+  {
+   "name": "packed portion cooking week 3",
+   "start": "2026-10-05T04:00:00",
+   "end": "2026-10-12T04:00:00",
+   "target": {
+    "specialty": "Ingredients"
+   },
+   "effects": {
+    "ingredient": 1,
+    "skillIngredient": 1.5,
+    "dish": 1.25,
+    "energyFromDish": 5,
+    "potSize": 2
+   },
+   "name_ja": "デカ盛り！料理ウィーク vol.3"
+  },
   {
    "name": "pursue mewtwo 2nd week",
    "start": "2026-09-21T04:00:00",

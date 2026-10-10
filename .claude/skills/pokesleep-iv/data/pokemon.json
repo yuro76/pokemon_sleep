@@ -1,6 +1,6 @@
 {
  "source": "https://github.com/nitoyon/pokesleep-tool (MIT License)",
- "updated": "2026-09-26",
+ "updated": "2026-10-10",
  "berry_base_strength": {
   "normal": 28,
   "fire": 27,
@@ -10862,6 +10862,114 @@
      {
       "name": "oil",
       "count": 5
+     }
+    ]
+   ]
+  },
+  {
+   "name_en": "Foongus",
+   "name_ja": "タマゲタケ",
+   "type": "poison",
+   "berry": "カゴのみ",
+   "specialty": "Ingredients",
+   "specialty_ja": "食材",
+   "skill": "Charge Strength S",
+   "skill_ja": "エナジーチャージS",
+   "frequency": 5700,
+   "ingRate": 17.4,
+   "skillRate": 3.5,
+   "carryLimit": 12,
+   "fp": 5,
+   "ancestor": 590,
+   "evolutionCount": 0,
+   "evolutionLeft": 1,
+   "form": null,
+   "arrival": "2026-10-05",
+   "sleep_type": "うとうと",
+   "mythical": false,
+   "ingredients": [
+    [
+     {
+      "name": "mushroom",
+      "count": 2
+     }
+    ],
+    [
+     {
+      "name": "mushroom",
+      "count": 5
+     },
+     {
+      "name": "egg",
+      "count": 7
+     }
+    ],
+    [
+     {
+      "name": "mushroom",
+      "count": 7
+     },
+     {
+      "name": "egg",
+      "count": 10
+     },
+     {
+      "name": "tomato",
+      "count": 11
+     }
+    ]
+   ]
+  },
+  {
+   "name_en": "Amoonguss",
+   "name_ja": "モロバレル",
+   "type": "poison",
+   "berry": "カゴのみ",
+   "specialty": "Ingredients",
+   "specialty_ja": "食材",
+   "skill": "Charge Strength S",
+   "skill_ja": "エナジーチャージS",
+   "frequency": 3500,
+   "ingRate": 20.4,
+   "skillRate": 4.7,
+   "carryLimit": 14,
+   "fp": 12,
+   "ancestor": 590,
+   "evolutionCount": 1,
+   "evolutionLeft": 0,
+   "form": null,
+   "arrival": "2026-10-05",
+   "sleep_type": "うとうと",
+   "mythical": false,
+   "ingredients": [
+    [
+     {
+      "name": "mushroom",
+      "count": 2
+     }
+    ],
+    [
+     {
+      "name": "mushroom",
+      "count": 5
+     },
+     {
+      "name": "egg",
+      "count": 7
+     }
+    ],
+    [
+     {
+      "name": "mushroom",
+      "count": 7
+     },
+     {
+      "name": "egg",
+      "count": 10
+     },
+     {
+      "name": "tomato",
+      "count": 11
      }
     ]
    ]
