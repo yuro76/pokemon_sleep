@@ -1429,5 +1429,73 @@
       "ingredient_total_per_day": 40.04,
       "skill_per_day": 0.54
     }
+  },
+  {
+    "id": 44,
+    "status": "厳選完了",
+    "saved_at": "2026-10-15 23:33",
+    "name": "ミニリュウ",
+    "name_en": "Dratini",
+    "level": 15,
+    "nature": "ひかえめ",
+    "subskills": [
+      "おてつだいボーナス",
+      "食材確率アップS",
+      "最大所持数アップS",
+      "最大所持数アップM",
+      "おてつだいスピードS"
+    ],
+    "ingredients": [
+      "げきからハーブ",
+      "ワカクサコーン",
+      "ピュアなオイル"
+    ],
+    "skill_level": 1,
+    "rp": 527,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "ミニリュウ★",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 3432.94,
+      "ingredient_total_per_day": 44.86,
+      "skill_per_day": 0.46
+    }
+  },
+  {
+    "id": 45,
+    "status": "キープ",
+    "saved_at": "2026-10-15 23:33",
+    "name": "メタモン",
+    "name_en": "Ditto",
+    "level": 30,
+    "nature": "やんちゃ",
+    "subskills": [
+      "リサーチEXPボーナス",
+      "スキル確率アップM",
+      "スキル確率アップS",
+      "最大所持数アップS",
+      "睡眠EXPボーナス"
+    ],
+    "ingredients": [
+      "ピュアなオイル",
+      "ピュアなオイル",
+      "ピュアなオイル"
+    ],
+    "skill_level": 1,
+    "rp": 1299,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "キープ",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 5127.75,
+      "ingredient_total_per_day": 30.54,
+      "skill_per_day": 1.35
+    }
   }
 ]
