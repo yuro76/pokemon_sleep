@@ -1,6 +1,6 @@
 {
  "source": "https://github.com/nitoyon/pokesleep-tool (MIT License)",
- "updated": "2026-10-10",
+ "updated": "2026-10-17",
  "berry_base_strength": {
   "normal": 28,
   "fire": 27,
@@ -1066,6 +1066,60 @@
      {
       "name": "egg",
       "count": 3
+     }
+    ]
+   ]
+  },
+  {
+   "name_en": "Pikachu (Low Key)",
+   "name_ja": "ピカチュウ (Low Key)",
+   "type": "electric",
+   "berry": "ウブのみ",
+   "specialty": "Berries",
+   "specialty_ja": "きのみ",
+   "skill": "unknown",
+   "skill_ja": "(不明)",
+   "frequency": 0,
+   "ingRate": 0,
+   "skillRate": 0,
+   "carryLimit": 0,
+   "fp": 0,
+   "ancestor": null,
+   "evolutionCount": -1,
+   "evolutionLeft": 0,
+   "form": "Low Key",
+   "arrival": "2023-07-17",
+   "sleep_type": "すやすや",
+   "mythical": false,
+   "ingredients": [
+    [
+     {
+      "name": "apple",
+      "count": 2
+     }
+    ],
+    [
+     {
+      "name": "apple",
+      "count": 2
+     },
+     {
+      "name": "cacao",
+      "count": 2
+     }
+    ],
+    [
+     {
+      "name": "apple",
+      "count": 2
+     },
+     {
+      "name": "cacao",
+      "count": 2
+     },
+     {
+      "name": "honey",
+      "count": 2
      }
     ]
    ]
@@ -5731,6 +5785,33 @@
    ]
   },
   {
+   "name_en": "Misdreavus",
+   "name_ja": "ムウマ",
+   "type": "ghost",
+   "berry": "ブリーのみ",
+   "specialty": "unknown",
+   "specialty_ja": "不明",
+   "skill": "unknown",
+   "skill_ja": "(不明)",
+   "frequency": 0,
+   "ingRate": 0,
+   "skillRate": 0,
+   "carryLimit": 0,
+   "fp": 16,
+   "ancestor": 200,
+   "evolutionCount": 0,
+   "evolutionLeft": 1,
+   "form": null,
+   "arrival": "2026-10-26",
+   "sleep_type": "うとうと",
+   "mythical": false,
+   "ingredients": [
+    [],
+    [],
+    []
+   ]
+  },
+  {
    "name_en": "Wobbuffet",
    "name_ja": "ソーナンス",
    "type": "psychic",
@@ -9562,6 +9643,33 @@
       "count": 4
      }
     ]
+   ]
+  },
+  {
+   "name_en": "Mismagius",
+   "name_ja": "ムウマージ",
+   "type": "ghost",
+   "berry": "ブリーのみ",
+   "specialty": "unknown",
+   "specialty_ja": "不明",
+   "skill": "Cooking Advance S (Mystical Fire)",
+   "skill_ja": "マジカルフレイム (料理アドバンスS)",
+   "frequency": 0,
+   "ingRate": 0,
+   "skillRate": 0,
+   "carryLimit": 0,
+   "fp": 20,
+   "ancestor": 200,
+   "evolutionCount": 1,
+   "evolutionLeft": 0,
+   "form": null,
+   "arrival": "2026-10-26",
+   "sleep_type": "うとうと",
+   "mythical": false,
+   "ingredients": [
+    [],
+    [],
+    []
    ]
   },
   {

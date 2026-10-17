@@ -7,6 +7,7 @@
     python3 .claude/skills/pokesleep-iv/scripts/update_data.py
 """
 import json
+import sys
 import urllib.request
 from datetime import date
 from pathlib import Path
@@ -80,17 +81,26 @@ def main():
             slots.append(opts)
         return slots
 
+    def name_ja(en):
+        # 日本語名が未登録の新フォルム (例: "Pikachu (Low Key)") は種族名だけ日本語にする
+        if en in ja_poke:
+            return ja_poke[en]
+        base, sep, form = en.partition(" (")
+        ja = f"{ja_poke.get(base, base)}{sep}{form}"
+        print(f"日本語名がありません: {en} -> {ja}", file=sys.stderr)
+        return ja
+
     out = []
     for p in pokemons:
         out.append({
             "name_en": p["name"],
-            "name_ja": ja_poke[p["name"]],
+            "name_ja": name_ja(p["name"]),
             "type": p["type"],
             "berry": BERRY_JA[p["type"]],
             "specialty": p["specialty"],
-            "specialty_ja": SPECIALTY_JA[p["specialty"]],
+            "specialty_ja": SPECIALTY_JA.get(p["specialty"], "不明"),  # 未実装のポケモンは unknown
             "skill": p["skill"],
-            "skill_ja": ja_skills[p["skill"]]["name"],
+            "skill_ja": ja_skills.get(p["skill"], {}).get("name", p["skill"]),
             "frequency": p["frequency"],
             "ingRate": p["ingRate"],
             "skillRate": p["skillRate"],
