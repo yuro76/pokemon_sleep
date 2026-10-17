@@ -1497,5 +1497,39 @@
       "ingredient_total_per_day": 30.54,
       "skill_per_day": 1.35
     }
+  },
+  {
+    "id": 46,
+    "status": "キープ",
+    "saved_at": "2026-10-17 23:42",
+    "name": "キュワワー",
+    "name_en": "Comfey",
+    "level": 25,
+    "nature": "ゆうかん",
+    "subskills": [
+      "睡眠EXPボーナス",
+      "おてつだいスピードM",
+      "おてつだいスピードS",
+      "スキルレベルアップS",
+      "食材確率アップS"
+    ],
+    "ingredients": [
+      "ワカクサコーン",
+      "ワカクサコーン",
+      "リラックスカカオ"
+    ],
+    "skill_level": 1,
+    "rp": 1477,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "キープ",
+    "memo": "コーン集め用 (AAC)。Lv30〜40はコーン記録内1位",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 8482.55,
+      "ingredient_total_per_day": 51.8,
+      "skill_per_day": 1.68
+    }
   }
 ]
