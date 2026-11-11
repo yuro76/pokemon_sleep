@@ -1565,5 +1565,39 @@
       "ingredient_total_per_day": 34.41,
       "skill_per_day": 0.26
     }
+  },
+  {
+    "id": 48,
+    "status": "キープ",
+    "saved_at": "2026-11-11 07:11",
+    "name": "クチート",
+    "name_en": "Mawile",
+    "level": 22,
+    "nature": "わんぱく",
+    "subskills": [
+      "最大所持数アップL",
+      "食材確率アップM",
+      "リサーチEXPボーナス",
+      "おてつだいスピードS",
+      "最大所持数アップS"
+    ],
+    "ingredients": [
+      "ピュアなオイル",
+      "ピュアなオイル",
+      "ピュアなオイル"
+    ],
+    "skill_level": 1,
+    "rp": 930,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": 0,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 6731.17,
+      "ingredient_total_per_day": 38.61,
+      "skill_per_day": 1.33
+    }
   }
 ]
