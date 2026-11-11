@@ -1531,5 +1531,39 @@
       "ingredient_total_per_day": 51.8,
       "skill_per_day": 1.68
     }
+  },
+  {
+    "id": 47,
+    "status": "キープ",
+    "saved_at": "2026-11-11 07:07",
+    "name": "ピンプク",
+    "name_en": "Happiny",
+    "level": 15,
+    "nature": "うっかりや",
+    "subskills": [
+      "最大所持数アップS",
+      "食材確率アップM",
+      "最大所持数アップM",
+      "食材確率アップS",
+      "スキル確率アップS"
+    ],
+    "ingredients": [
+      "とくせんエッグ",
+      "とくせんエッグ",
+      "とくせんエッグ"
+    ],
+    "skill_level": 1,
+    "rp": 385,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": null,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 2291.01,
+      "ingredient_total_per_day": 34.41,
+      "skill_per_day": 0.26
+    }
   }
 ]
