@@ -39,7 +39,7 @@ INGREDIENT_STRENGTH = {
     "leek": 185, "mushroom": 167, "egg": 115, "potato": 124, "apple": 90,
     "herb": 130, "sausage": 103, "milk": 98, "honey": 101, "oil": 121,
     "ginger": 109, "tomato": 110, "cacao": 151, "tail": 342, "soy": 100,
-    "corn": 140, "coffee": 153, "pumpkin": 250, "avocado": 162,
+    "corn": 140, "coffee": 153, "pumpkin": 250, "avocado": 162, "nuts": 112,
 }
 
 SPECIALTY_JA = {"Berries": "きのみ", "Ingredients": "食材", "Skills": "スキル", "All": "オール"}

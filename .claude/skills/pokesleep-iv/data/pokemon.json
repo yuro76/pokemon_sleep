@@ -1,6 +1,6 @@
 {
  "source": "https://github.com/nitoyon/pokesleep-tool (MIT License)",
- "updated": "2026-10-17",
+ "updated": "2026-11-19",
  "berry_base_strength": {
   "normal": 28,
   "fire": 27,
@@ -97,6 +97,10 @@
   "avocado": {
    "ja": "つやつやアボカド",
    "strength": 162
+  },
+  "nuts": {
+   "ja": "ひとくちナッツ",
+   "strength": 112
   }
  },
  "natures": {
@@ -1197,6 +1201,60 @@
    "evolutionLeft": 0,
    "form": "Halloween",
    "arrival": "2023-10-30",
+   "sleep_type": "すやすや",
+   "mythical": false,
+   "ingredients": [
+    [
+     {
+      "name": "apple",
+      "count": 1
+     }
+    ],
+    [
+     {
+      "name": "apple",
+      "count": 2
+     },
+     {
+      "name": "ginger",
+      "count": 2
+     }
+    ],
+    [
+     {
+      "name": "apple",
+      "count": 4
+     },
+     {
+      "name": "ginger",
+      "count": 3
+     },
+     {
+      "name": "egg",
+      "count": 3
+     }
+    ]
+   ]
+  },
+  {
+   "name_en": "Pikachu (Halloween2)",
+   "name_ja": "ピカチュウ (ハロウィン)",
+   "type": "electric",
+   "berry": "ウブのみ",
+   "specialty": "Berries",
+   "specialty_ja": "きのみ",
+   "skill": "Charge Strength S (Random)",
+   "skill_ja": "エナジーチャージS (ランダム)",
+   "frequency": 2500,
+   "ingRate": 21.8,
+   "skillRate": 2.8,
+   "carryLimit": 18,
+   "fp": 7,
+   "ancestor": null,
+   "evolutionCount": -1,
+   "evolutionLeft": 0,
+   "form": "Halloween2",
+   "arrival": "2024-10-28",
    "sleep_type": "すやすや",
    "mythical": false,
    "ingredients": [
@@ -3224,7 +3282,7 @@
    "skill": "Charge Strength S (Random)",
    "skill_ja": "エナジーチャージS (ランダム)",
    "frequency": 2200,
-   "ingRate": 16.1,
+   "ingRate": 16.6,
    "skillRate": 2.4,
    "carryLimit": 18,
    "fp": 22,
@@ -3765,6 +3823,60 @@
    "evolutionLeft": 0,
    "form": "Halloween",
    "arrival": "2025-10-27",
+   "sleep_type": "すやすや",
+   "mythical": false,
+   "ingredients": [
+    [
+     {
+      "name": "pumpkin",
+      "count": 1
+     }
+    ],
+    [
+     {
+      "name": "pumpkin",
+      "count": 2
+     },
+     {
+      "name": "cacao",
+      "count": 4
+     }
+    ],
+    [
+     {
+      "name": "pumpkin",
+      "count": 4
+     },
+     {
+      "name": "cacao",
+      "count": 6
+     },
+     {
+      "name": "milk",
+      "count": 9
+     }
+    ]
+   ]
+  },
+  {
+   "name_en": "Eevee (Halloween2)",
+   "name_ja": "イーブイ (ハロウィン)",
+   "type": "normal",
+   "berry": "キーのみ",
+   "specialty": "Skills",
+   "specialty_ja": "スキル",
+   "skill": "Ingredient Magnet S",
+   "skill_ja": "食材ゲットS",
+   "frequency": 3200,
+   "ingRate": 12,
+   "skillRate": 4.6,
+   "carryLimit": 18,
+   "fp": 5,
+   "ancestor": null,
+   "evolutionCount": -1,
+   "evolutionLeft": 0,
+   "form": "Halloween2",
+   "arrival": "2026-10-26",
    "sleep_type": "すやすや",
    "mythical": false,
    "ingredients": [
@@ -5789,14 +5901,14 @@
    "name_ja": "ムウマ",
    "type": "ghost",
    "berry": "ブリーのみ",
-   "specialty": "unknown",
-   "specialty_ja": "不明",
-   "skill": "unknown",
-   "skill_ja": "(不明)",
-   "frequency": 0,
-   "ingRate": 0,
-   "skillRate": 0,
-   "carryLimit": 0,
+   "specialty": "Skills",
+   "specialty_ja": "スキル",
+   "skill": "Cooking Power-Up S",
+   "skill_ja": "料理パワーアップS",
+   "frequency": 2800,
+   "ingRate": 15,
+   "skillRate": 4.7,
+   "carryLimit": 13,
    "fp": 16,
    "ancestor": 200,
    "evolutionCount": 0,
@@ -5806,9 +5918,36 @@
    "sleep_type": "うとうと",
    "mythical": false,
    "ingredients": [
-    [],
-    [],
-    []
+    [
+     {
+      "name": "potato",
+      "count": 1
+     }
+    ],
+    [
+     {
+      "name": "potato",
+      "count": 2
+     },
+     {
+      "name": "coffee",
+      "count": 2
+     }
+    ],
+    [
+     {
+      "name": "potato",
+      "count": 4
+     },
+     {
+      "name": "coffee",
+      "count": 3
+     },
+     {
+      "name": "tomato",
+      "count": 4
+     }
+    ]
    ]
   },
   {
@@ -9650,14 +9789,14 @@
    "name_ja": "ムウマージ",
    "type": "ghost",
    "berry": "ブリーのみ",
-   "specialty": "unknown",
-   "specialty_ja": "不明",
+   "specialty": "Skills",
+   "specialty_ja": "スキル",
    "skill": "Cooking Advance S (Mystical Fire)",
    "skill_ja": "マジカルフレイム (料理アドバンスS)",
-   "frequency": 0,
-   "ingRate": 0,
-   "skillRate": 0,
-   "carryLimit": 0,
+   "frequency": 2400,
+   "ingRate": 14.2,
+   "skillRate": 3.6,
+   "carryLimit": 17,
    "fp": 20,
    "ancestor": 200,
    "evolutionCount": 1,
@@ -9667,9 +9806,36 @@
    "sleep_type": "うとうと",
    "mythical": false,
    "ingredients": [
-    [],
-    [],
-    []
+    [
+     {
+      "name": "potato",
+      "count": 1
+     }
+    ],
+    [
+     {
+      "name": "potato",
+      "count": 2
+     },
+     {
+      "name": "coffee",
+      "count": 2
+     }
+    ],
+    [
+     {
+      "name": "potato",
+      "count": 4
+     },
+     {
+      "name": "coffee",
+      "count": 3
+     },
+     {
+      "name": "tomato",
+      "count": 4
+     }
+    ]
    ]
   },
   {
@@ -10862,6 +11028,114 @@
      {
       "name": "coffee",
       "count": 2
+     }
+    ]
+   ]
+  },
+  {
+   "name_en": "Cottonee",
+   "name_ja": "モンメン",
+   "type": "fairy",
+   "berry": "モモンのみ",
+   "specialty": "Ingredients",
+   "specialty_ja": "食材",
+   "skill": "Charge Energy S",
+   "skill_ja": "げんきチャージS",
+   "frequency": 4600,
+   "ingRate": 20,
+   "skillRate": 3.5,
+   "carryLimit": 10,
+   "fp": 5,
+   "ancestor": 546,
+   "evolutionCount": 0,
+   "evolutionLeft": 1,
+   "form": null,
+   "arrival": "2026-11-16",
+   "sleep_type": "すやすや",
+   "mythical": false,
+   "ingredients": [
+    [
+     {
+      "name": "nuts",
+      "count": 2
+     }
+    ],
+    [
+     {
+      "name": "nuts",
+      "count": 5
+     },
+     {
+      "name": "avocado",
+      "count": 3
+     }
+    ],
+    [
+     {
+      "name": "nuts",
+      "count": 7
+     },
+     {
+      "name": "avocado",
+      "count": 5
+     },
+     {
+      "name": "tomato",
+      "count": 7
+     }
+    ]
+   ]
+  },
+  {
+   "name_en": "Whimsicott",
+   "name_ja": "エルフーン",
+   "type": "fairy",
+   "berry": "モモンのみ",
+   "specialty": "Ingredients",
+   "specialty_ja": "食材",
+   "skill": "Charge Energy S",
+   "skill_ja": "げんきチャージS",
+   "frequency": 2400,
+   "ingRate": 19.9,
+   "skillRate": 3.8,
+   "carryLimit": 17,
+   "fp": 20,
+   "ancestor": 546,
+   "evolutionCount": 1,
+   "evolutionLeft": 0,
+   "form": null,
+   "arrival": "2026-11-16",
+   "sleep_type": "すやすや",
+   "mythical": false,
+   "ingredients": [
+    [
+     {
+      "name": "nuts",
+      "count": 2
+     }
+    ],
+    [
+     {
+      "name": "nuts",
+      "count": 5
+     },
+     {
+      "name": "avocado",
+      "count": 3
+     }
+    ],
+    [
+     {
+      "name": "nuts",
+      "count": 7
+     },
+     {
+      "name": "avocado",
+      "count": 5
+     },
+     {
+      "name": "tomato",
+      "count": 7
      }
     ]
    ]
