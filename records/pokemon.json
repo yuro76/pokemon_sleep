@@ -1599,5 +1599,39 @@
       "ingredient_total_per_day": 38.61,
       "skill_per_day": 1.33
     }
+  },
+  {
+    "id": 49,
+    "status": "キープ",
+    "saved_at": "2026-11-21 06:47",
+    "name": "モンメン",
+    "name_en": "Cottonee",
+    "level": 14,
+    "nature": "せっかち",
+    "subskills": [
+      "スキル確率アップS",
+      "最大所持数アップS",
+      "きのみの数S",
+      "おてつだいスピードS",
+      "食材確率アップS"
+    ],
+    "ingredients": [
+      "ひとくちナッツ",
+      "ひとくちナッツ",
+      "ひとくちナッツ"
+    ],
+    "skill_level": 1,
+    "rp": 353,
+    "ribbon": 0,
+    "mint": false,
+    "evolve_to": "",
+    "evolution_count": 0,
+    "nickname": "",
+    "memo": "",
+    "snapshot_lv80": {
+      "berry_energy_per_day": 6922.43,
+      "ingredient_total_per_day": 32.55,
+      "skill_per_day": 1.16
+    }
   }
 ]
